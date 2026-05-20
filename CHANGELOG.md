@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.31] - 2026-04-06
+
+### Added
+- **Native Empty Rotation Cleanup & Center All:** Added native custom editor controls to mirror the newly shipped web and Java cleanup and geometry workflow.
+
+### Changed
+- Bumped local version to `2.0.31`.
+
+### Validation
+- Implemented native `CustomGameEditorControl::centerAllRotations()` and `CustomGameEditorControl::emptyRotationCleanup()`.
+
+
 ## [2.0.27] - 2026-04-06
 
 ### Added

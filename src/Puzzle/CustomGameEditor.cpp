@@ -215,6 +215,18 @@ void CustomGameEditorControl::removePiece()
 {
 	if (currentGameType == nullptr) return;
 	if (selectedPieceIndex < 0 || selectedPieceIndex >= currentGameType->pieceTypes.size()) return;
+
+	static int removalConfirmations = 0;
+	if (removalConfirmations == 0)
+	{
+		if (removePieceBtn) removePieceBtn->SetText("Click Again to Confirm");
+		removalConfirmations++;
+		return;
+	}
+
+	if (removePieceBtn) removePieceBtn->SetText("Remove Piece");
+	removalConfirmations = 0;
+
 	currentGameType->pieceTypes.removeAt(selectedPieceIndex);
 	if (currentGameType->pieceTypes.size() == 0)
 	{
@@ -260,6 +272,18 @@ void CustomGameEditorControl::removeRotation()
 {
 	shared_ptr<PieceType> pieceType = getSelectedPieceType();
 	if (pieceType == nullptr || pieceType->rotationSet.size() == 0) return;
+
+	static int removalConfirmationsRot = 0;
+	if (removalConfirmationsRot == 0)
+	{
+		if (removeRotationBtn) removeRotationBtn->SetText("Click Again to Confirm");
+		removalConfirmationsRot++;
+		return;
+	}
+
+	if (removeRotationBtn) removeRotationBtn->SetText("Remove Rotation");
+	removalConfirmationsRot = 0;
+
 	pieceType->rotationSet.removeAt(selectedRotationIndex);
 	if (pieceType->rotationSet.size() == 0)
 	{
@@ -361,6 +385,9 @@ void CustomGameEditorControl::refreshEditorState()
 {
 	shared_ptr<PieceType> pieceType = getSelectedPieceType();
 	Rotation* rotation = getSelectedRotation();
+
+	if (removePieceBtn) removePieceBtn->SetText("Remove Piece");
+	if (removeRotationBtn) removeRotationBtn->SetText("Remove Rotation");
 
 	string pieceSummary = "Piece: none";
 	if (pieceType != nullptr)
