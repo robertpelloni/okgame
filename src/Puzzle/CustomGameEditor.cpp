@@ -121,6 +121,41 @@ void CustomGameEditorControl::initPreviewGame()
 	// Preview bootstrapping stays stubbed for now; this parity pass focuses on live editing state.
 }
 
+void CustomGameEditorControl::Render(Gwen::Skin::Base* skin)
+{
+	Gwen::Controls::Base::Render(skin);
+
+	Rotation* rotation = getSelectedRotation();
+	if (rotation == nullptr) return;
+
+	Gwen::Rect bounds = GetInnerBounds();
+
+	int startX = bounds.x + 200;
+	int startY = bounds.y + 100;
+	int blockSize = 16;
+
+	shared_ptr<PieceType> pieceType = getSelectedPieceType();
+	Gwen::Color blockColor = Gwen::Color(100, 100, 255, 255);
+
+	if (pieceType != nullptr && pieceType->blocks.size() > 0)
+	{
+		BlockType* bType = pieceType->blocks.get(0).get();
+		if (bType && bType->useSpecialColor)
+		{
+			blockColor = Gwen::Color(bType->color.r * 255, bType->color.g * 255, bType->color.b * 255, 255);
+		}
+	}
+
+	for (int i = 0; i < rotation->blockOffsets.size(); i++)
+	{
+		BlockOffset* offset = rotation->blockOffsets.get(i);
+		skin->GetRender()->SetDrawColor(blockColor);
+		skin->GetRender()->DrawFilledRect(Gwen::Rect(startX + offset->x() * blockSize, startY + offset->y() * blockSize, blockSize, blockSize));
+		skin->GetRender()->SetDrawColor(Gwen::Color(0, 0, 0, 100));
+		skin->GetRender()->DrawLinedRect(Gwen::Rect(startX + offset->x() * blockSize, startY + offset->y() * blockSize, blockSize, blockSize));
+	}
+}
+
 void CustomGameEditorControl::saveAllToCurrentGameType()
 {
 	refreshEditorState();
