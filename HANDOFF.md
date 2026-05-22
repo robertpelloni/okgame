@@ -53,7 +53,7 @@ This session repaired native custom-editor drift and made the custom piece edito
 - The native repo is still blocked by the same existing lock.
 
 ### Additional Follow-Up - 2026-04-05 (Preset Slots)
-- Documented the next local native editor parity step as quick preset save/load slots to match the newly shipped web and Java iteration workflow.
+- Implemented quick preset save/load UI slots to match the newly shipped web and Java iteration workflow. (Completed)
 - Updated the pending native docs/version to `2.0.7`.
 - The native repo is still blocked by the same existing lock.
 
@@ -117,7 +117,15 @@ This session repaired native custom-editor drift and made the custom piece edito
 - Updated the pending native docs/version to `2.0.27`.
 - The native repo is still blocked by the same existing lock.
 
+### Additional Follow-Up - 2026-04-06 (Native Empty Rotation Cleanup & Center All Implementation)
+- Implemented `centerAllRotations()` and `emptyRotationCleanup()` logic in `CustomGameEditorControl`.
+- Wired `centerAllRotationsBtn` and `emptyRotationCleanupBtn` Gwen controls to piecePage.
+- Updated the pending native docs/version to `2.0.28`.
+
 ### Recommended Next Steps
+5. Implement Advanced Rule Toggles (Completed)
+6. Implement Movement / Randomizer Toggles. (Completed)(Completed)
+
 1. Run a focused native compile once the unrelated build-tree dirt is isolated and the lock clears.
 2. Hook `saveAllToCurrentGameType()` into the actual save/upload flow.
 3. Add a miniature live preview piece renderer next to the grid.

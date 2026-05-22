@@ -36,6 +36,7 @@ public:
 	CustomGameEditorControl(Gwen::Controls::Base* pParent, const Gwen::String& pName = "", BobsGame* b = nullptr);
 
 	void initPreviewGame();
+	virtual void Render(Gwen::Skin::Base* skin) override;
 	void saveAllToCurrentGameType();
 
 	void onAddPieceButton(Gwen::Controls::Base* control);
