@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.28] - 2026-06-15
+
+### Added
+- **Submodule:** Integrated `bobsgameonlinejava` as the primary reference for the C++ engine port.
+- **Shared Database:** Ported `RPGDatabase.h` to `src/Engine/shared/database/`, utilizing `std::shared_ptr` and mirroring the Java structure.
+- **UI Panels:** Created `EditorsPanel` and `GameEditorPanel` skeletons in C++ and wired them into the `StuffMenu` system.
+- **Documentation:** Initialized `VISION.md`, `MEMORY.md`, and `DEPLOY.md` to track engine porting progress and architectural decisions.
+- **ECS Improvement:** Enhanced `VisualScriptSystem.h` with recursive block processing and variable-handling placeholders.
+
+### Changed
+- Bumped version to `2.0.28`.
+- Updated `IDEAS.md` to include automated memory management refactoring plans.
+
 ## [2.0.27] - 2026-04-06
 
 ### Added

@@ -341,6 +341,10 @@ set(SOURCE_FILES
     src/Engine/rpg/gui/stuffMenu/subMenus/SettingsPanel.h
     src/Engine/rpg/gui/stuffMenu/subMenus/StatusPanel.cpp
     src/Engine/rpg/gui/stuffMenu/subMenus/StatusPanel.h
+    src/Engine/rpg/gui/stuffMenu/subMenus/EditorsPanel.cpp
+    src/Engine/rpg/gui/stuffMenu/subMenus/EditorsPanel.h
+    src/Engine/rpg/gui/stuffMenu/subMenus/GameEditorPanel.cpp
+    src/Engine/rpg/gui/stuffMenu/subMenus/GameEditorPanel.h
     src/Engine/rpg/gui/stuffMenu/StuffMenu.cpp
     src/Engine/rpg/gui/stuffMenu/StuffMenu.h
     src/Engine/rpg/gui/stuffMenu/SubPanel.cpp
