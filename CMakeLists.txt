@@ -171,6 +171,8 @@ set(SOURCE_FILES
     src/Engine/cinematics/Letterbox.h
     src/Engine/cinematics/ScreenOverlay.cpp
     src/Engine/cinematics/ScreenOverlay.h
+    src/Engine/ecs/Entity.cpp
+    src/Engine/ecs/behaviors/EightDirectionBehavior.cpp
     src/Engine/entity/Cameraman.cpp
     src/Engine/entity/Cameraman.h
     src/Engine/entity/Character.cpp
@@ -259,6 +261,7 @@ set(SOURCE_FILES
     src/Engine/nd/ND.h
     src/Engine/nd/NDGameEngine.cpp
     src/Engine/nd/NDGameEngine.h
+    src/Engine/nd/NDPuzzleGame.h
     src/Engine/network/BobNet.cpp
     src/Engine/network/BobNet.h
     src/Engine/network/NetworkManager.cpp

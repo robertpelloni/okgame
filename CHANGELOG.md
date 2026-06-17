@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.28] - 2026-06-15
+
+### Added
+- **Java Engine Core Port:** Ported the central `RPGDatabase` and `GameDataLoader` from Java to C++ with 1:1 data parity.
+- **ECS Visual Scripting:** Implemented a data-driven ECS system (`VisualScriptSystem`) supporting hierarchical event sheets, conditions, and actions mirroring the LibGDX implementation.
+- **Unified Editor UI:** Integrated `RPGEditorControl` and refined `CustomGameEditorControl` within the GWEN-based `StuffMenu`, enabling native editing of Actor, Item, and Puzzle data.
+- **Asset Pipeline:** Added support for Base64-encoded, Zlib-compressed asset parsing in `GameDataLoader` using `FileUtils` and `miniz`.
+
+### Changed
+- Bumped version to `2.0.28`.
+- Modernized `EightDirectionBehavior` to use unified C++ `ControlsManager` state.
+
 ## [2.0.27] - 2026-04-06
 
 ### Added
