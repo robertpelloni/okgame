@@ -1,6 +1,6 @@
 include(CMakeFindDependencyMacro)
 find_dependency(PocoFoundation)
-if(OFF)
+if(ON)
 	find_dependency(PocoXML)
 endif()
 if(ON)

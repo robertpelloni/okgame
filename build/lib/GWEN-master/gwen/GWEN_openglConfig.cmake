@@ -3,6 +3,6 @@
             set_property(
                 TARGET GWEN_opengl
                 APPEND PROPERTY
-                    INTERFACE_INCLUDE_DIRECTORIES "/app/lib/GWEN-master/gwen"
+                    INTERFACE_INCLUDE_DIRECTORIES "C:/Users/hyper/workspace/bg/okgame/lib/GWEN-master/gwen"
             )
         
