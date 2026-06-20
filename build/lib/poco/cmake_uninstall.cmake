@@ -1,14 +1,14 @@
-IF(NOT EXISTS "C:/Users/hyper/workspace/bg/okgame/build/lib/poco/install_manifest.txt")
-  MESSAGE(FATAL_ERROR "Cannot find install manifest: \"C:/Users/hyper/workspace/bg/okgame/build/lib/poco/install_manifest.txt\"")
-ENDIF(NOT EXISTS "C:/Users/hyper/workspace/bg/okgame/build/lib/poco/install_manifest.txt")
+IF(NOT EXISTS "/app/build/lib/poco/install_manifest.txt")
+  MESSAGE(FATAL_ERROR "Cannot find install manifest: \"/app/build/lib/poco/install_manifest.txt\"")
+ENDIF(NOT EXISTS "/app/build/lib/poco/install_manifest.txt")
 
-FILE(READ "C:/Users/hyper/workspace/bg/okgame/build/lib/poco/install_manifest.txt" files)
+FILE(READ "/app/build/lib/poco/install_manifest.txt" files)
 STRING(REGEX REPLACE "\n" ";" files "${files}")
 FOREACH(file ${files})
   MESSAGE(STATUS "Uninstalling \"$ENV{DESTDIR}${file}\"")
   IF(EXISTS "$ENV{DESTDIR}${file}")
     EXEC_PROGRAM(
-      "C:/Program Files/CMake/bin/cmake.exe" ARGS "-E remove \"$ENV{DESTDIR}${file}\""
+      "/usr/bin/cmake" ARGS "-E remove \"$ENV{DESTDIR}${file}\""
       OUTPUT_VARIABLE rm_out
       RETURN_VALUE rm_retval
       )

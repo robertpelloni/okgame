@@ -9,10 +9,10 @@
 #  ifndef PROJECTM_CXX_EXPORT
 #    ifdef projectM_api_EXPORTS
         /* We are building this library */
-#      define PROJECTM_CXX_EXPORT __declspec(dllexport)
+#      define PROJECTM_CXX_EXPORT
 #    else
         /* We are using this library */
-#      define PROJECTM_CXX_EXPORT __declspec(dllimport)
+#      define PROJECTM_CXX_EXPORT
 #    endif
 #  endif
 
@@ -22,7 +22,7 @@
 #endif
 
 #ifndef PROJECTM_CXX_DEPRECATED
-#  define PROJECTM_CXX_DEPRECATED __declspec(deprecated)
+#  define PROJECTM_CXX_DEPRECATED
 #endif
 
 #ifndef PROJECTM_CXX_DEPRECATED_EXPORT

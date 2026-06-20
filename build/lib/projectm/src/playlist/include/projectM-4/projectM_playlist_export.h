@@ -9,10 +9,10 @@
 #  ifndef PROJECTM_PLAYLIST_EXPORT
 #    ifdef projectM_playlist_EXPORTS
         /* We are building this library */
-#      define PROJECTM_PLAYLIST_EXPORT __declspec(dllexport)
+#      define PROJECTM_PLAYLIST_EXPORT
 #    else
         /* We are using this library */
-#      define PROJECTM_PLAYLIST_EXPORT __declspec(dllimport)
+#      define PROJECTM_PLAYLIST_EXPORT
 #    endif
 #  endif
 
@@ -22,7 +22,7 @@
 #endif
 
 #ifndef PROJECTM_PLAYLIST_DEPRECATED
-#  define PROJECTM_PLAYLIST_DEPRECATED __declspec(deprecated)
+#  define PROJECTM_PLAYLIST_DEPRECATED
 #endif
 
 #ifndef PROJECTM_PLAYLIST_DEPRECATED_EXPORT
