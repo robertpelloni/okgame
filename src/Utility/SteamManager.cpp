@@ -132,13 +132,3 @@ bool SteamManager::isCloudEnabled() {
 #endif
     return false;
 }
-
-#ifdef HAVE_STEAMWORKS
-void SteamManager::onUserStatsReceived(UserStatsReceived_t* pCallback) {
-    if (k_EResultOK == pCallback->m_eResult) {
-        Main::log.info("Received user stats from Steam");
-    } else {
-        Main::log.error("Failed to receive user stats from Steam");
-    }
-}
-#endif
