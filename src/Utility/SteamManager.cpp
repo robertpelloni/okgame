@@ -145,3 +145,28 @@ void SteamManager::onUserStatsReceived(UserStatsReceived_t* pCallback) {
 
 // Added extra test function for basic Steam initialization validation
 bool SteamManager::testInitialization() { return SteamManager::isSteamRunning(); }
+
+#ifdef HAVE_STEAMWORKS
+bool SteamManager::verifyCloudSync() {
+    if (isCloudEnabled()) {
+        const std::string testFile = "cloud_sync_test.txt";
+        const std::string testData = "bob's game sync test";
+        if (writeCloudFile(testFile, testData)) {
+            std::string readData = readCloudFile(testFile);
+            if (readData == testData) {
+                Main::log.info("Steam Cloud sync verification successful");
+                return true;
+            }
+        }
+    }
+    Main::log.error("Steam Cloud sync verification failed");
+    return false;
+}
+
+void SteamManager::syncAchievements() {
+    if (SteamUserStats()) {
+        SteamUserStats()->RequestCurrentStats();
+        Main::log.info("Steam achievements synced with server");
+    }
+}
+#endif

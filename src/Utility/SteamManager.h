@@ -29,6 +29,8 @@ public:
     static bool writeCloudFile(const string& filename, const string& data);
     static string readCloudFile(const string& filename);
     static bool isCloudEnabled();
+	static bool verifyCloudSync();
+	static void syncAchievements();
 
 private:
 #ifdef HAVE_STEAMWORKS
