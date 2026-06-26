@@ -422,6 +422,8 @@ set(SOURCE_FILES
     src/Puzzle/GameTestMenu.h
     src/Puzzle/BobsGameMenus.cpp
     src/Puzzle/BobsGameNetwork.cpp
+    src/Puzzle/TournamentManager.h
+    src/Puzzle/TournamentManager.cpp
     src/Puzzle/CustomGameEditor.h
     src/Puzzle/CustomGameEditor.cpp
     src/Puzzle/GlobalSettings.h

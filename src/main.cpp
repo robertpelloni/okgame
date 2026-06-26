@@ -108,6 +108,7 @@ void cleanup()
 	if (mainObject != nullptr)
 	{
 		mainObject->cleanup();
+		SteamManager::shutdown();
 		delete mainObject;
 		mainObject = nullptr;
 	}
@@ -1020,6 +1021,7 @@ void Main::updateMain()
 	//GLUtils::e();
 
 	SteamManager::update();
+	TournamentManager::update();
 
 	stateManager->getCurrentState()->updateControls();
 	//GLUtils::e();
