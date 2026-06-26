@@ -142,3 +142,6 @@ void SteamManager::onUserStatsReceived(UserStatsReceived_t* pCallback) {
     }
 }
 #endif
+
+// Added extra test function for basic Steam initialization validation
+bool SteamManager::testInitialization() { return SteamManager::isSteamRunning(); }

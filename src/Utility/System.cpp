@@ -328,6 +328,12 @@ void System::updateStats()
 
 	rendersSkippedText->text = "Renders Skipped: " + to_string(rendersSkipped);
 	updatesSkippedText->text = "Updates Skipped: " + to_string(updatesSkipped);
+	profileUpdateText->text = "Update Time: " + to_string(lastUpdateMs) + "ms";
+	profileRenderText->text = "Render Time: " + to_string(lastRenderMs) + "ms";
+	profileSwapText->text = "Swap Time: " + to_string(lastSwapMs) + "ms";
+	if (lastUpdateMs > 16.0) profileUpdateText->color = BobColor::red; else profileUpdateText->color = BobColor::lightGray;
+	if (lastRenderMs > 16.0) profileRenderText->color = BobColor::red; else profileRenderText->color = BobColor::lightGray;
+	if (lastSwapMs > 16.0) profileSwapText->color = BobColor::red; else profileSwapText->color = BobColor::lightGray;
 
 	if(Main::bobNet->tcpServerConnection.getConnectedToServer_S()==true)
 	{

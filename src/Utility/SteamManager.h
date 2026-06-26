@@ -14,6 +14,7 @@ public:
     static void init();
     static void update();
     static void shutdown();
+	static bool testInitialization();
 
     static void setAchievement(const string& id);
     static void setStat(const string& id, int value);
