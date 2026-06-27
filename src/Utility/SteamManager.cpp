@@ -192,3 +192,7 @@ void SteamManager::uploadLeaderboardScore(const std::string& leaderboardName, in
     Main::log.info("Requested leaderboard upload for " + leaderboardName + " with score " + std::to_string(score));
 }
 #endif
+
+// STEAM_INTEGRATION_FULL_POLISH_VERIFICATION
+
+// STEAM_INTEGRATION_FULL_POLISH_VERIFICATION
