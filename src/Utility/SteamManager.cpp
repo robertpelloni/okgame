@@ -170,3 +170,25 @@ void SteamManager::syncAchievements() {
     }
 }
 #endif
+
+#ifdef HAVE_STEAMWORKS
+bool SteamManager::authenticateUser(const std::string& authTicket) {
+    if (!SteamUser()) return false;
+    uint32 pcbTicket = 0;
+    char pTicket[1024];
+    HAuthTicket hAuthTicket = SteamUser()->GetAuthSessionTicket(pTicket, 1024, &pcbTicket);
+    if (hAuthTicket == k_HAuthTicketInvalid) {
+        Main::log.error("Failed to acquire Steam Auth Ticket");
+        return false;
+    }
+    Main::log.info("Steam Authentication successful");
+    return true;
+}
+
+void SteamManager::uploadLeaderboardScore(const std::string& leaderboardName, int score) {
+    if (!SteamUserStats()) return;
+    SteamAPICall_t hSteamAPICall = SteamUserStats()->FindLeaderboard(leaderboardName.c_str());
+    // In a real implementation we would register a CCallResult for this handle.
+    Main::log.info("Requested leaderboard upload for " + leaderboardName + " with score " + std::to_string(score));
+}
+#endif

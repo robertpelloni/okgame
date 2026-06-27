@@ -31,6 +31,8 @@ public:
     static bool isCloudEnabled();
 	static bool verifyCloudSync();
 	static void syncAchievements();
+	static bool authenticateUser(const std::string& authTicket);
+	static void uploadLeaderboardScore(const std::string& leaderboardName, int score);
 
 private:
 #ifdef HAVE_STEAMWORKS
