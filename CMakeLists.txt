@@ -503,6 +503,8 @@ set(SOURCE_FILES
     src/Utility/FileUtils.h
     src/Utility/HashMap.h
     src/Utility/Logger.cpp
+    src/Utility/Profiler.h
+    src/Utility/Profiler.cpp
     src/Utility/Logger.h
     #src/Utility/RectangularVectors.h
     src/Utility/stringconverter.h

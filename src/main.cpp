@@ -934,7 +934,9 @@ void Main::whilefix()
 			frame = true;
 
 			mainObject->render();
-			doSwap();
+			Profiler::beginBlock("doSwap");
+				doSwap();
+				Profiler::endBlock("doSwap");
 		}
 		justDelay(10);
 	}
@@ -1185,9 +1187,15 @@ void Main::mainLoop()
 				System::updateUpdateTimers();
 				//this just lowers cpu usage
 				//Sleep(2); //TODO: vary this based on system speed
+				Profiler::beginBlock("updateMain");
 				updateMain();
+				Profiler::endBlock("updateMain");
+				Profiler::beginBlock("renderMain");
 				renderMain();
+				Profiler::endBlock("renderMain");
+				Profiler::beginBlock("doSwap");
 				doSwap();
+				Profiler::endBlock("doSwap");
 				//System::framesrendered++;
 			}
 			else
@@ -1197,15 +1205,25 @@ void Main::mainLoop()
 				{
 					System::resetTotalRenderTicksPassed();
 					System::updateUpdateTimers();
-					updateMain();
-					renderMain();
-					doSwap();
+					Profiler::beginBlock("updateMain");
+				updateMain();
+				Profiler::endBlock("updateMain");
+					Profiler::beginBlock("renderMain");
+				renderMain();
+				Profiler::endBlock("renderMain");
+					Profiler::beginBlock("doSwap");
+				doSwap();
+				Profiler::endBlock("doSwap");
 					//System::framesrendered++;
 				}
 				else
 				{
-					renderMain();
-					doSwap();
+					Profiler::beginBlock("renderMain");
+				renderMain();
+				Profiler::endBlock("renderMain");
+					Profiler::beginBlock("doSwap");
+				doSwap();
+				Profiler::endBlock("doSwap");
 					//System::framesrendered++;
 				}
 
