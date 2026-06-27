@@ -4,10 +4,11 @@
 **Current Version:** 2.0.0
 
 ## In Progress
-*   [ ] **Steam Integration Polish** (Replace C++ SDK stubs with real Steamworks binaries)
-*   [ ] **Performance Profiling** (Identify bottlenecks in high-frequency frame sync)
+
 
 ## Completed Features
+*   [x] **Steam Integration Polish** (Replace C++ SDK stubs with real Steamworks binaries)
+*   [x] **Performance Profiling** (Identify bottlenecks in high-frequency frame sync)
 *   [x] **Unified Release (2.0.0)** (Finalized cross-platform parity and synchronization) - *Completed March 18, 2026*
 *   [x] **Visualizer Shaders (1.7.0)** (Modernize projectM shaders for SDL3 compatibility)
 *   [x] **C++ Matchmaking UI (1.6.0)** (`LobbyMenuPanel` and `GameSelectorMenuPanel`)
