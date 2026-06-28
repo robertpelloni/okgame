@@ -77,7 +77,6 @@ void LobbyMenuPanel::rebuildMenu()
     menu->add("Game Mode: " + formatGameModeLabel(getSelectedGameMode()), "Game Mode");
     menu->add("Start Level: " + std::to_string(m_startLevel), "Start Level");
     menu->add("Create Room");
-    menu->add("Create Tournament");
     menu->add("Send Message");
 
     if (!m_chatMessages.empty()) {

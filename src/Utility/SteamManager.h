@@ -14,7 +14,6 @@ public:
     static void init();
     static void update();
     static void shutdown();
-	static bool testInitialization();
 
     static void setAchievement(const string& id);
     static void setStat(const string& id, int value);
@@ -29,10 +28,6 @@ public:
     static bool writeCloudFile(const string& filename, const string& data);
     static string readCloudFile(const string& filename);
     static bool isCloudEnabled();
-	static bool verifyCloudSync();
-	static void syncAchievements();
-	static bool authenticateUser(const std::string& authTicket);
-	static void uploadLeaderboardScore(const std::string& leaderboardName, int score);
 
 private:
 #ifdef HAVE_STEAMWORKS

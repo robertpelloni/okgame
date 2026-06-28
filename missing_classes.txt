@@ -160,6 +160,7 @@ TileMoveEdit
 TilePixelChangeEdit
 Tileset
 TilesetPalette
+TournamentManager
 UDPConnection
 UDPInterface
 UndoManager

@@ -154,7 +154,7 @@ set(SOURCE_FILES
         lib/stb/stb_truetype.h
         lib/stb/stb_vorbis.c
         #lib/minilzo-2.09/minilzo.c
-
+        lib/GWEN/gwen/src/Input/gwen_input_sdl2.cpp
         lib/md5-c/md5.c
         lib/md5-c/md5.h
         lib/lz4-java/src/lz4/lib/lz4.c
@@ -422,8 +422,6 @@ set(SOURCE_FILES
     src/Puzzle/GameTestMenu.h
     src/Puzzle/BobsGameMenus.cpp
     src/Puzzle/BobsGameNetwork.cpp
-    src/Puzzle/TournamentManager.h
-    src/Puzzle/TournamentManager.cpp
     src/Puzzle/CustomGameEditor.h
     src/Puzzle/CustomGameEditor.cpp
     src/Puzzle/GlobalSettings.h
@@ -503,8 +501,6 @@ set(SOURCE_FILES
     src/Utility/FileUtils.h
     src/Utility/HashMap.h
     src/Utility/Logger.cpp
-    src/Utility/Profiler.h
-    src/Utility/Profiler.cpp
     src/Utility/Logger.h
     #src/Utility/RectangularVectors.h
     src/Utility/stringconverter.h
