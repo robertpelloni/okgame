@@ -6,7 +6,9 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17 -fpermissive")
+if(NOT MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
+endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${bobsgame_SOURCE_DIR}/cmake")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 set(CMAKE_SKIP_INSTALL_RULES ON CACHE BOOL "Skip third-party install/export rules for local validation builds" FORCE)
@@ -53,7 +55,7 @@ set(ENABLE_NETSSL OFF CACHE BOOL "Disable optional Poco NetSSL for local okgame 
 set(ENABLE_CRYPTO OFF CACHE BOOL "Disable optional Poco Crypto for local okgame builds" FORCE)
 set(ENABLE_JWT OFF CACHE BOOL "Disable optional Poco JWT for local okgame builds" FORCE)
 add_subdirectory(lib/poco)
-add_subdirectory(lib/GWEN-master/gwen)
+add_subdirectory(lib/GWEN/gwen)
 add_subdirectory(lib/boost)
 
 #find_library(OPENGL REQUIRED GL)
@@ -63,7 +65,7 @@ add_subdirectory(lib/boost)
 #find_library(SDL2TTF REQUIRED SDL2_ttf>=2.0.0)
 
 #include_directories(
-#        ${OPENGL_INCLUDE_DIR}
+#        #${OPENGL_INCLUDE_DIR}
 #        ${SDL2_INCLUDE_DIR}
 #        ${SDL2_IMAGE_INCLUDE_DIR}
 #        ${SDL2_MIXER_INCLUDE_DIR}
@@ -79,7 +81,7 @@ add_subdirectory(lib/boost)
 #        ${bobsgame_SOURCE_DIR}/lib/miniz-master
 #        ${bobsgame_SOURCE_DIR}/lib/minilzo-2.09
 #        ${bobsgame_SOURCE_DIR}/lib/GWEN/gwen/include
-#        ${bobsgame_SOURCE_DIR}/lib/GWEN-master/gwen/include
+#        ${bobsgame_SOURCE_DIR}/lib/GWEN/gwen/include
 #        ${bobsgame_SOURCE_DIR}/lib/projectm/src
 #        ${bobsgame_SOURCE_DIR}/lib/libretro-common/include
 #        #${bobsgame_SOURCE_DIR}/lib/boost_1_62_0
@@ -90,7 +92,7 @@ add_subdirectory(lib/boost)
 #)
 
 set(BOBSGAME_INCLUDE_DIRS
-        ${OPENGL_INCLUDE_DIR}
+        #${OPENGL_INCLUDE_DIR}
         ${bobsgame_SOURCE_DIR}/lib/SDL/include
         ${bobsgame_SOURCE_DIR}/lib/SDL_image/include
         ${bobsgame_SOURCE_DIR}/lib/SDL_mixer/include
@@ -102,7 +104,7 @@ set(BOBSGAME_INCLUDE_DIRS
         ${bobsgame_SOURCE_DIR}/lib/poco/Util/include
         ${bobsgame_SOURCE_DIR}/lib/poco/XML/include
         ${bobsgame_SOURCE_DIR}/lib/poco/Zip/include
-        ${bobsgame_SOURCE_DIR}/lib/GWEN-master/gwen/include
+        ${bobsgame_SOURCE_DIR}/lib/GWEN/gwen/include
         ${bobsgame_SOURCE_DIR}/lib/boost
         ${bobsgame_SOURCE_DIR}/lib/CTPL
         ${bobsgame_SOURCE_DIR}/lib/steam/public
@@ -152,7 +154,7 @@ set(SOURCE_FILES
         lib/stb/stb_truetype.h
         lib/stb/stb_vorbis.c
         #lib/minilzo-2.09/minilzo.c
-        lib/GWEN-master/gwen/src/Input/gwen_input_sdl2.cpp
+        lib/GWEN/gwen/src/Input/gwen_input_sdl2.cpp
         lib/md5-c/md5.c
         lib/md5-c/md5.h
         lib/lz4-java/src/lz4/lib/lz4.c

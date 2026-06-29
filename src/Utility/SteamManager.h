@@ -32,7 +32,7 @@ public:
 private:
 #ifdef HAVE_STEAMWORKS
     // Steam callbacks
-    // STEAM_CALLBACK(SteamManager, onUserStatsReceived, UserStatsReceived_t);
+    STEAM_CALLBACK(SteamManager, onUserStatsReceived, UserStatsReceived_t);
 #endif
 };
 

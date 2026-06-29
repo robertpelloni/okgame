@@ -1,5 +1,5 @@
 {
-	"InstallScripts" : 
+	"InstallScripts" :
 	[
 		"C:/Users/hyper/workspace/bg/okgame/build/cmake_install.cmake",
 		"C:/Users/hyper/workspace/bg/okgame/build/lib/SDL/cmake_install.cmake",

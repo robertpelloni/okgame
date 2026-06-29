@@ -116,6 +116,16 @@ jobs:
             libglew-dev \
             libglm-dev \
             libpoco-dev \
+            libxcursor-dev \
+            libxi-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            libxss-dev \
+            libwayland-dev \
+            libxkbcommon-dev \
+            libasound2-dev \
+            libpulse-dev \
+            libxtst-dev \
             pkg-config
 
       - name: Cache CMake build
