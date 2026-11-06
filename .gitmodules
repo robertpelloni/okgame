@@ -264,9 +264,6 @@
 [submodule "lib/libtimidity"]
 	path = lib/libtimidity
 	url = https://github.com/sezero/libtimidity
-[submodule "lib/libmidi"]
-	path = lib/libmidi
-	url = https://github.com/opencodewin/libmidi
 [submodule "lib/defold-astar"]
 	path = lib/defold-astar
 	url = https://github.com/selimanac/defold-astar
