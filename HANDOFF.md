@@ -1,3 +1,41 @@
+# Handoff - 2026-04-06
+
+## 2026-04-06 - Unified Dashboard Consolidation, Steam Polish & Workspace Governance
+
+### Summary
+This session unified the operations and engine dashboard into a single consolidated, high-value operations hub, polished Steamworks dynamic AppID initialization and cloud synchronization, authored foundational workspace governance documentation (`VISION.md`, `TODO.md`, `DEPLOY.md`, `MEMORY.md`), and hardened Linux deployment scripts nondestructively.
+
+### What Changed
+- **Unified Dashboard Consolidation (`docs/DASHBOARD.md`):**
+  - Replaced fragmented status tables with an integrated high-value priority control center.
+  - Grouped features logically into Gameplay & Editor Hub, Audio & Visualization, Emulation/Libretro, Online Lobby & Steam, and System Tray & Server Process Lifecycle.
+  - Documented guidance tooltips, interactive parameter explainers, and real-time performance telemetry (VSync vs. decoupled frame sync profiling).
+- **Steamworks SDK Polish (`src/Utility/SteamManager.cpp`):**
+  - Enhanced `SteamManager::init()` to dynamically read and honor `steam_appid.txt` if present on disk, with automatic fallback to AppID 480 (Spacewar).
+  - Added logging on restart delegation when launching through the Steam client launcher.
+- **Core Governance Documentation:**
+  - Authored `VISION.md` detailing ultimate project goals, 4 foundational pillars, and user satisfaction design.
+  - Authored `TODO.md` outlining granular, categorized tasks across UI, Custom Game Editor, Libretro, Network, and Bobcoin.
+  - Authored `DEPLOY.md` detailing cross-platform setup, library dependencies, CMake build commands, and packaging scripts.
+  - Authored `MEMORY.md` detailing internal architectural observations, naming conventions (`_S`, `_Mutex`), and memory management patterns.
+- **Script Modernization & Cleanup:**
+  - Backed up `linux/bobsgame.sh` and `linux/prepare_for_launch.sh` to `.bak` files.
+  - Hardened `linux/bobsgame.sh` with strict bash flags (`set -euo pipefail`), dynamic script directory resolution, and executable verification.
+  - Streamlined `linux/prepare_for_launch.sh` with clean blacklist pattern matching and error-tolerant cleanup.
+- **Version & Changelog:**
+  - Bumped project version to `2.0.28` in `VERSION.md`.
+  - Documented changes under `[2.0.28]` in `CHANGELOG.md` and updated `ROADMAP.md` and `IDEAS.md`.
+
+### Validation
+- Validated script syntax with `bash -n linux/bobsgame.sh` and `bash -n linux/prepare_for_launch.sh`.
+- Executed `prepare_for_launch.sh` in the environment to confirm successful execution.
+- Verified all new documentation files exist and adhere to formatting standards.
+
+### Recommended Next Steps for Successor Models
+1. **System Tray Implementation:** Connect `SDL_CreateTray` (SDL3) into `Main::init()` with callbacks for window focus toggle, audio mute, and clean server shutdown.
+2. **Custom Game Editor Viewport Preview:** Render a real-time miniature piece preview canvas next to the 4x4 matrix grid in `CustomGameEditorControl`.
+3. **Bobcoin Wallet Subsystem:** Wire `lib/bobcoin` client routines in `src/Engine/network/BobcoinManager.cpp` and implement the in-game wallet dashboard panel.
+
 # Handoff - 2026-03-18
 
 ## 2026-04-05 - Native Custom Puzzle Editor Recovery

@@ -3,10 +3,18 @@
 
 void SteamManager::init() {
 #ifdef HAVE_STEAMWORKS
-    // Use Spacewar AppID (480) for development if no real AppID is provided
-    uint32 appID = 480; 
+    // Check steam_appid.txt or default to Spacewar (480) for development
+    uint32 appID = 480;
+    FILE* appidFile = fopen("steam_appid.txt", "r");
+    if (appidFile) {
+        if (fscanf(appidFile, "%u", &appID) != 1) {
+            appID = 480;
+        }
+        fclose(appidFile);
+    }
 
     if (SteamAPI_RestartAppIfNecessary(appID)) {
+        Main::log.info("Restarting application via Steam client launcher...");
         exit(1);
     }
 
