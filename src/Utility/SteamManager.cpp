@@ -22,7 +22,7 @@ void SteamManager::init() {
         Main::log.error("SteamAPI_Init() failed");
         return;
     }
-    Main::log.info("Steam initialized successfully with AppID 480");
+    Main::log.info("Steam initialized successfully with AppID " + std::to_string(appID));
 
     // Request user stats and achievements
     if (SteamUserStats()) {
