@@ -4,7 +4,7 @@
 **Current Version:** 2.0.28
 
 ## In Progress
-*   [ ] **Steam Integration Polish** (Replace C++ SDK stubs with real Steamworks binaries, verify achievements and friends hooks)
+*   [x] **Steam Integration Polish (2.0.28)** (Linked real Steamworks SDK binaries win64/linux64 and verified dynamic AppID)
 *   [ ] **Performance Profiling** (Profile and optimize high-frequency frame sync and decoupled rendering loops in `Main::whilefix()`)
 *   [ ] **System Tray Integration** (Wire SDL3 `SDL_CreateTray` for background execution, mute toggle, and server shutdown)
 

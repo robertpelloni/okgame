@@ -11,6 +11,7 @@ This session unified the operations and engine dashboard into a single consolida
   - Grouped features logically into Gameplay & Editor Hub, Audio & Visualization, Emulation/Libretro, Online Lobby & Steam, and System Tray & Server Process Lifecycle.
   - Documented guidance tooltips, interactive parameter explainers, and real-time performance telemetry (VSync vs. decoupled frame sync profiling).
 - **Steamworks SDK Polish (`src/Utility/SteamManager.cpp`):**
+  - Populated `lib/steam/redistributable_bin/win64/` and `win32/` with `steam_api64.lib`, `steam_api64.dll`, and `steam_api.lib` matching CMakeLists.txt link targets.
   - Enhanced `SteamManager::init()` to dynamically read and honor `steam_appid.txt` if present on disk, with automatic fallback to AppID 480 (Spacewar).
   - Added logging on restart delegation when launching through the Steam client launcher.
 - **Core Governance Documentation:**
