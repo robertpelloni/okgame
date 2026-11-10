@@ -106,6 +106,17 @@ void SteamManager::clearRichPresence() {
 #endif
 }
 
+bool SteamManager::resetAllStats(bool achievementsToo) {
+#ifdef HAVE_STEAMWORKS
+    if (SteamUserStats()) {
+        bool res = SteamUserStats()->ResetAllStats(achievementsToo);
+        SteamUserStats()->StoreStats();
+        return res;
+    }
+#endif
+    return false;
+}
+
 void SteamManager::setStat(const string& id, int value) {
 #ifdef HAVE_STEAMWORKS
     SteamUserStats()->SetStat(id.c_str(), value);
