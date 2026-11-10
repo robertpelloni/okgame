@@ -16,8 +16,14 @@ public:
     static void shutdown();
 
     static void setAchievement(const string& id);
+    static bool getAchievement(const string& id, bool* achieved);
+    static bool clearAchievement(const string& id);
+    static bool isOverlayEnabled();
+    static void activateGameOverlay(const string& dialog);
     static void setStat(const string& id, int value);
+    static bool getStat(const string& id, int* value);
     static void setStat(const string& id, float value);
+    static bool getStat(const string& id, float* value);
 
     static bool isSteamRunning();
     static uint64_t getSteamID();

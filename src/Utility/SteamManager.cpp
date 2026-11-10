@@ -51,6 +51,44 @@ void SteamManager::setAchievement(const string& id) {
 #endif
 }
 
+bool SteamManager::getAchievement(const string& id, bool* achieved) {
+#ifdef HAVE_STEAMWORKS
+    if (SteamUserStats() && achieved) {
+        return SteamUserStats()->GetAchievement(id.c_str(), achieved);
+    }
+#endif
+    if (achieved) *achieved = false;
+    return false;
+}
+
+bool SteamManager::clearAchievement(const string& id) {
+#ifdef HAVE_STEAMWORKS
+    if (SteamUserStats()) {
+        bool res = SteamUserStats()->ClearAchievement(id.c_str());
+        SteamUserStats()->StoreStats();
+        return res;
+    }
+#endif
+    return false;
+}
+
+bool SteamManager::isOverlayEnabled() {
+#ifdef HAVE_STEAMWORKS
+    if (SteamUtils()) {
+        return SteamUtils()->IsOverlayEnabled();
+    }
+#endif
+    return false;
+}
+
+void SteamManager::activateGameOverlay(const string& dialog) {
+#ifdef HAVE_STEAMWORKS
+    if (SteamFriends()) {
+        SteamFriends()->ActivateGameOverlay(dialog.c_str());
+    }
+#endif
+}
+
 void SteamManager::setStat(const string& id, int value) {
 #ifdef HAVE_STEAMWORKS
     SteamUserStats()->SetStat(id.c_str(), value);
@@ -58,11 +96,31 @@ void SteamManager::setStat(const string& id, int value) {
 #endif
 }
 
+bool SteamManager::getStat(const string& id, int* value) {
+#ifdef HAVE_STEAMWORKS
+    if (SteamUserStats() && value) {
+        return SteamUserStats()->GetStat(id.c_str(), (int32*)value);
+    }
+#endif
+    if (value) *value = 0;
+    return false;
+}
+
 void SteamManager::setStat(const string& id, float value) {
 #ifdef HAVE_STEAMWORKS
     SteamUserStats()->SetStat(id.c_str(), value);
     SteamUserStats()->StoreStats();
 #endif
+}
+
+bool SteamManager::getStat(const string& id, float* value) {
+#ifdef HAVE_STEAMWORKS
+    if (SteamUserStats() && value) {
+        return SteamUserStats()->GetStat(id.c_str(), value);
+    }
+#endif
+    if (value) *value = 0.0f;
+    return false;
 }
 
 bool SteamManager::isSteamRunning() {
