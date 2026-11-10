@@ -20,6 +20,8 @@ public:
     static bool clearAchievement(const string& id);
     static bool isOverlayEnabled();
     static void activateGameOverlay(const string& dialog);
+    static bool setRichPresence(const string& key, const string& value);
+    static void clearRichPresence();
     static void setStat(const string& id, int value);
     static bool getStat(const string& id, int* value);
     static void setStat(const string& id, float value);

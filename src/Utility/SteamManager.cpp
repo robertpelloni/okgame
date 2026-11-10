@@ -89,6 +89,23 @@ void SteamManager::activateGameOverlay(const string& dialog) {
 #endif
 }
 
+bool SteamManager::setRichPresence(const string& key, const string& value) {
+#ifdef HAVE_STEAMWORKS
+    if (SteamFriends()) {
+        return SteamFriends()->SetRichPresence(key.c_str(), value.c_str());
+    }
+#endif
+    return false;
+}
+
+void SteamManager::clearRichPresence() {
+#ifdef HAVE_STEAMWORKS
+    if (SteamFriends()) {
+        SteamFriends()->ClearRichPresence();
+    }
+#endif
+}
+
 void SteamManager::setStat(const string& id, int value) {
 #ifdef HAVE_STEAMWORKS
     SteamUserStats()->SetStat(id.c_str(), value);
