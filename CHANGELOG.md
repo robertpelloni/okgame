@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.28] - 2026-04-06
+
+### Added
+- **Consolidated Single-Page Dashboard (`docs/DASHBOARD.md`):** Completely redesigned the engine dashboard into a unified, high-value operations hub grouping Gameplay/Editor, Audio/Visualization, Emulation/Libretro, Online/Steam, and System Tray Lifecycle.
+- **Guidance Tooltips & Controls Documentation:** Documented interactive tooltips and contextual markers for complex puzzle tuning parameters and Libretro options.
+- **Core Governance Documentation:** Created `VISION.md`, `TODO.md`, `DEPLOY.md`, and `MEMORY.md` following universal governance standards.
+- **System Tray Lifecycle Specification:** Added tray actions for show/hide window, audio mute/unmute, quicksave, and graceful server/process quit.
+- **Performance & Frame Sync Telemetry:** Documented profiling insights into VSync vs. decoupled high-frequency frame sync loops.
+
+### Changed
+- Bumped project version to `2.0.28`.
+- Updated `ROADMAP.md` and `IDEAS.md` to reflect dashboard consolidation, Steam polish, and frame profiling.
+
 ## [2.0.27] - 2026-04-06
 
 ### Added
