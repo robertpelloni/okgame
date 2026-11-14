@@ -48,8 +48,9 @@ GwenSDL2::GwenSDL2()
 
 void GwenSDL2::Initialize(Controls::Canvas* canvas)
 {
+    // This fork's Input API takes the canvas per call; there is no
+    // RegisterCanvas free function anymore.
     _canvas = canvas;
-    Gwen::Input::RegisterCanvas(_canvas);
 }
 
 bool GwenSDL2::ProcessEvent(const SDL_Event& the_event)
@@ -61,11 +62,11 @@ bool GwenSDL2::ProcessEvent(const SDL_Event& the_event)
 
     switch (the_event.type)
     {
-    case SDL_KEYUP:
-    case SDL_KEYDOWN:
+    case SDL_EVENT_KEY_UP:
+    case SDL_EVENT_KEY_DOWN:
         {
             SDL_KeyboardEvent keyboard_event = the_event.key;
-            SDL_Scancode scancode = keyboard_event.keysym.scancode;
+            SDL_Scancode scancode = keyboard_event.scancode;
 
             int key = Gwen::Key::Invalid;
             switch (scancode)
@@ -161,21 +162,23 @@ bool GwenSDL2::ProcessEvent(const SDL_Event& the_event)
                 return false;
             };
 
-            return Gwen::Input::OnKeyEvent(key, keyboard_event.state != 0);
+            return Gwen::Input::OnKeyEvent(_canvas, key, keyboard_event.down);
         };
-    case SDL_TEXTINPUT:
+    case SDL_EVENT_TEXT_INPUT:
         {
-            // TODO: This will probably need fixing for UTF-8.
-            char character = the_event.text.text[0];
-            return Gwen::Input::OnCharacter(character);
+            // This fork has no OnCharacter free function (the PS4 backend
+            // leaves text input unwired too); character entry is not
+            // routed through this backend.
+            return false;
         };
-    case SDL_MOUSEMOTION:
+    case SDL_EVENT_MOUSE_MOTION:
         {
             SDL_MouseMotionEvent mouse_motion_event = the_event.motion;
-            return Gwen::Input::OnMouseMoved(mouse_motion_event.x, mouse_motion_event.y, mouse_motion_event.xrel, mouse_motion_event.yrel, nullptr);
+            Gwen::Input::OnMouseMoved(_canvas, (int)mouse_motion_event.x, (int)mouse_motion_event.y, (int)mouse_motion_event.xrel, (int)mouse_motion_event.yrel);
+            return true;
         };
-    case SDL_MOUSEBUTTONDOWN:
-    case SDL_MOUSEBUTTONUP:
+    case SDL_EVENT_MOUSE_BUTTON_DOWN:
+    case SDL_EVENT_MOUSE_BUTTON_UP:
         {
             SDL_MouseButtonEvent mouse_button_event = the_event.button;
 
@@ -195,12 +198,12 @@ bool GwenSDL2::ProcessEvent(const SDL_Event& the_event)
                 return false;
             };
 
-            return Gwen::Input::OnMouseButton(button, mouse_button_event.state != 0);
+            return Gwen::Input::OnMouseClicked(_canvas, button, mouse_button_event.down);
         };
-    case SDL_MOUSEWHEEL:
+    case SDL_EVENT_MOUSE_WHEEL:
         {
             SDL_MouseWheelEvent mouse_wheel_event = the_event.wheel;
-            return Gwen::Input::OnMouseWheel(mouse_wheel_event.y);
+            return _canvas->InputMouseWheel(mouse_wheel_event.integer_y);
         };
     default:
         {
@@ -213,7 +216,7 @@ bool GwenSDL2::_ProcessAccelerator(char character, const SDL_KeyboardEvent& keyb
 {
     bool result = false;
 
-    if (_canvas != nullptr && keyboard_event.state != 0)
+    if (_canvas != nullptr && keyboard_event.down)
     {
         //result = _canvas->InputAccelerator(character);
     }

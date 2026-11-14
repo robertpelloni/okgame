@@ -54,6 +54,11 @@ set(ENABLE_CRYPTO OFF CACHE BOOL "Disable optional Poco Crypto for local okgame 
 set(ENABLE_JWT OFF CACHE BOOL "Disable optional Poco JWT for local okgame builds" FORCE)
 add_subdirectory(lib/poco)
 add_subdirectory(lib/GWEN-master/gwen)
+# GWEN-master's OpenGL renderer compiles glew.c, which needs GL/wglew.h;
+# that header only ships in the lib/GWEN submodule's include tree.
+if(TARGET GWEN_opengl)
+    target_include_directories(GWEN_opengl PRIVATE lib/GWEN/gwen/include)
+endif()
 add_subdirectory(lib/boost)
 
 #find_library(OPENGL REQUIRED GL)
@@ -551,6 +556,7 @@ target_link_libraries(bobsgame
         GWEN_static
         #GWEN_opengl
         Boost::serialization
+        Boost::uuid
         ${STEAM_LIBS}
 )
 if(ENABLE_PROJECTM_AVAILABLE)
