@@ -39,22 +39,19 @@ void TCPServerConnection::cleanup()
 void TCPServerConnection::TCP_Close()
 {//===============================================================================================
 #ifndef ORBIS
-	SDLNet_TCP_Close(getSocket_S());
+	if (getSocket_S() != nullptr)
+	{
+		NET_DestroyStreamSocket(getSocket_S());
+		setSocket_S(nullptr);
+	}
 #else
 #endif
 }
 
 void TCPServerConnection::TCP_Delete_Socket()
 {//===============================================================================================
-
-#ifndef ORBIS
-	if (SDLNet_TCP_DelSocket(getSocketSet_S(), getSocket_S()) < 0)
-	{
-		threadLogDebug_S("SDLNet_TCP_DelSocket: " + string(SDLNet_GetError()) + string(SDL_GetError()));
-		SDL_ClearError();
-	}
-#else
-#endif
+	// SDL3_net has no socket sets to delete from; kept as a no-op so the
+	// existing disconnect bookkeeping call sites stay valid.
 }
 
 //===============================================================================================
@@ -335,93 +332,49 @@ void TCPServerConnection::_checkForIncomingTraffic()
 
 	if (getSocketAddedToSet_S())
 	{
-		int numReady = 0;
-		
-#ifndef ORBIS
-		numReady = SDLNet_CheckSockets(getSocketSet_S(), 0);
-		if (numReady < 0)
-		{
-			threadLogWarn_S("SDLNet_CheckSockets: " + string(SDLNet_GetError()) + string(SDL_GetError()));
-			SDL_ClearError();
-		}
-#else
-
-#endif
-
-
 		queue<string*> packetsToProcess;
 
-		int bytesReceived = 1;
-
-		while (numReady > 0 && getStopThread_S() == false)
+		// SDL3_net: poll the stream socket directly and read while data is
+		// available (replaces socket-set + SocketReady + TCP_Recv).
+		while (getStopThread_S() == false)
 		{
-
-
-			int rd = 0;
-			
 #ifndef ORBIS
-			rd = SDLNet_SocketReady(getSocket_S());
-
-			if (rd < 0)
-			{
-				threadLogWarn_S("SDLNet_TCP_Recv Error: " + string(SDLNet_GetError()) + string(SDL_GetError()));
-				SDL_ClearError();
-			}
-#else
-
-#endif
-
-			while (rd > 0)
-			{
-				rd--;
-
-				//while (bytesReceived > 0)//dont do this for tcp, doesnt work
-				{
-					const int size = 65535;
-					char* buf = new char[size];
-
-					bytesReceived = 0;
-
-#ifndef ORBIS
-					bytesReceived = SDLNet_TCP_Recv(getSocket_S(), buf, size);
-#else
-
-#endif
-
-					if (bytesReceived > 0)
-					{
-						string *s = new string(buf, bytesReceived);
-
-						packetsToProcess.push(s);
-						delete[] buf;
-
-					}
-					else if (bytesReceived < 0)
-					{
-						delete[] buf;
-						//connection to server lost
-						threadLogWarn_S("SDLNet_TCP_Recv:" + to_string(bytesReceived));
-						setDisconnectedFromServer_S("Error receiving data.");
-						
-					}
-					else
-						delete[] buf;
-				}
-			}
-
-
-			numReady = 0;
-#ifndef ORBIS
-			numReady = SDLNet_CheckSockets(getSocketSet_S(), 0);
+			void* readySockets[1] = { (void*)getSocket_S() };
+			int numReady = NET_WaitUntilInputAvailable(readySockets, 1, 0);
 			if (numReady < 0)
 			{
-				threadLogWarn_S("SDLNet_CheckSockets: " + string(SDLNet_GetError()) + string(SDL_GetError()));
+				threadLogWarn_S("NET_WaitUntilInputAvailable: " + string(SDL_GetError()));
 				SDL_ClearError();
+				break;
+			}
+			if (numReady == 0) break;
+
+			const int size = 65535;
+			char* buf = new char[size];
+			int bytesReceived = NET_ReadFromStreamSocket(getSocket_S(), buf, size);
+
+			if (bytesReceived > 0)
+			{
+				string *s = new string(buf, bytesReceived);
+				packetsToProcess.push(s);
+				delete[] buf;
+			}
+			else if (bytesReceived < 0)
+			{
+				delete[] buf;
+				//connection to server lost
+				threadLogWarn_S("NET_ReadFromStreamSocket:" + to_string(bytesReceived));
+				setDisconnectedFromServer_S("Error receiving data.");
+				break;
+			}
+			else
+			{
+				delete[] buf;
+				break;
 			}
 #else
-
+			break;
 #endif
-
 		}
 
 		while (packetsToProcess.size() > 0)
@@ -546,10 +499,10 @@ bool TCPServerConnection::ensureConnectedToServerThreadBlock_S()
 					//Main::whilefix();
 					threadLogDebug_S("Resolving host to load balancer...");
 
-					_loadBalancerAddress = make_shared<IPaddress>();
-					if (SDLNet_ResolveHost(_loadBalancerAddress.get(), Main::serverAddressString.c_str(), Main::serverTCPPort) < 0 )
+					_loadBalancerAddress = make_shared<NetAddress>();
+					if (!_loadBalancerAddress->resolve(Main::serverAddressString, Main::serverTCPPort))
 					{
-						threadLogWarn_S("Could not resolve load balancer IP: " + string(SDLNet_GetError()) + string(SDL_GetError()));
+						threadLogWarn_S("Could not resolve load balancer IP: " + string(SDL_GetError()));
 						SDL_ClearError();
 						_couldNotResolveLoadBalancer = true;
 						threadLogWarn_S("Networking is disabled");
@@ -574,28 +527,25 @@ bool TCPServerConnection::ensureConnectedToServerThreadBlock_S()
 						threadLogDebug_S("Connecting to load balancer...");
 
 #ifndef ORBIS
-						setSocket_S(SDLNet_TCP_Open(_loadBalancerAddress.get()));//TODO: if it can't connect to the server the thread stalls here
+						// SDL3_net connects asynchronously; wait bounded
+						// (the old blocking TCP_Open could stall here).
+						setSocket_S(NET_CreateClient(_loadBalancerAddress->addr, _loadBalancerAddress->port));
+						if (getSocket_S() != nullptr &&
+							NET_WaitUntilConnected(getSocket_S(), 5000) != NET_SUCCESS)
+						{
+							NET_DestroyStreamSocket(getSocket_S());
+							setSocket_S(nullptr);
+						}
 						if (!getSocket_S())
 						{
-							//SDLNet_FreeSocketSet(set);
-							threadLogWarn_S("Could not open connection to load balancer: " + string(SDLNet_GetError()) + string(SDL_GetError()));
+							threadLogWarn_S("Could not open connection to load balancer: " + string(SDL_GetError()));
 							SDL_ClearError();
 							_couldNotOpenConnectionToLoadBalancerCount++;
 							return false;
 						}
 
 						setSocketIsOpen_S(true);
-
-						if (getSocketAddedToSet_S() == false)
-						{
-							if (SDLNet_TCP_AddSocket(getSocketSet_S(), getSocket_S()) < 0)
-							{
-								threadLogWarn_S("SDLNet_TCP_AddSocket: " + string(SDLNet_GetError()) + string(SDL_GetError()));
-								SDL_ClearError();
-							}
-							else
-								setSocketAddedToSet_S(true);
-						}
+						setSocketAddedToSet_S(true);
 
 #else
 
@@ -665,8 +615,8 @@ bool TCPServerConnection::ensureConnectedToServerThreadBlock_S()
 			//for running server locally
 			if (Main::serverAddressString == "localhost")setServerIPAddressString_S("localhost");
 
-			_serverAddress = make_shared<IPaddress>();
-			if (SDLNet_ResolveHost(_serverAddress.get(), getServerIPAddressString_S().c_str(), Main::serverTCPPort) < 0)
+			_serverAddress = make_shared<NetAddress>();
+			if (!_serverAddress->resolve(getServerIPAddressString_S(), Main::serverTCPPort))
 			{
 				threadLogError_S("Could not resolve server address: " + string(SDL_GetError()));
 				setDisconnectedFromServer_S("Could not resolve server address.");
@@ -699,23 +649,23 @@ bool TCPServerConnection::ensureConnectedToServerThreadBlock_S()
 			_lastServerConnectTime = currentTime;
 
 #ifndef ORBIS
-			//connect to the server
-			setSocket_S(SDLNet_TCP_Open(_serverAddress.get()));
+			//connect to the server (async in SDL3_net; bounded wait)
+			setSocket_S(NET_CreateClient(_serverAddress->addr, _serverAddress->port));
+			if (getSocket_S() != nullptr &&
+				NET_WaitUntilConnected(getSocket_S(), 5000) != NET_SUCCESS)
+			{
+				NET_DestroyStreamSocket(getSocket_S());
+				setSocket_S(nullptr);
+			}
 			if (!getSocket_S())
 			{
-				threadLogWarn_S("Could not open connection to server: " + string(SDLNet_GetError()) + string(SDL_GetError()));
+				threadLogWarn_S("Could not open connection to server: " + string(SDL_GetError()));
 				SDL_ClearError();
 				_couldNotOpenConnectionToServerCount++;
 				return false;
 			}
 
-			if (SDLNet_TCP_AddSocket(getSocketSet_S(), getSocket_S()) < 0)
-			{
-				threadLogWarn_S("SDLNet_TCP_AddSocket: " + string(SDLNet_GetError()) + string(SDL_GetError()));
-				SDL_ClearError();
-			}
-			else
-				setSocketAddedToSet_S(true);
+			setSocketAddedToSet_S(true);
 
 #else
 
@@ -1052,7 +1002,9 @@ bool TCPServerConnection::write_S(string s)
 	//while(bytesSent<(int)s.length())
 
 
-		bytesSent += SDLNet_TCP_Send(getSocket_S(), (void *)buf, (int)s.length());
+		// SDL3_net stream writes are all-or-error at this API level.
+		bytesSent = NET_WriteToStreamSocket(getSocket_S(), (const void *)buf, (int)s.length())
+			? (int)s.length() : 0;
 
 
 		if(bytesSent<(int)s.length())

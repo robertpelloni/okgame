@@ -341,9 +341,9 @@ void Main::mainInit()
 		exit(2);
 	}
 
-	if (SDLNet_Init() < 0)
+	if (!NET_Init())
 	{
-		log.error("SDLNet_Init error: "+string(SDLNet_GetError()));
+		log.error("NET_Init error: "+string(SDL_GetError()));
 	}
 
 #else
@@ -2173,8 +2173,8 @@ void Main::cleanup()
 	delete bobNet;
 
 #ifndef ORBIS
-	log.info("SDLNet_Quit");
-	SDLNet_Quit();
+	log.info("NET_Quit");
+	NET_Quit();
 	//enet_deinitialize();
 #else
 

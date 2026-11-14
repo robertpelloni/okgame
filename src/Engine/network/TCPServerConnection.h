@@ -96,7 +96,7 @@ private:
 	int _couldNotOpenConnectionToLoadBalancerCount = 0;
 
 #ifndef ORBIS
-	shared_ptr<IPaddress> _loadBalancerAddress = nullptr;
+	shared_ptr<NetAddress> _loadBalancerAddress = nullptr;
 #else
 
 #endif
@@ -171,35 +171,21 @@ public:
 
 #ifndef ORBIS
 	//------------------------------------
+	// SDL3_net: stream socket; readiness via NET_WaitUntilInputAvailable
+	// (no socket sets).
 private:
-	TCPsocket _socket = TCPsocket();
+	NET_StreamSocket* _socket = nullptr;
 	mutex _socket_Mutex;
 public:
-	TCPsocket getSocket_S()
+	NET_StreamSocket* getSocket_S()
 	{
 		lock_guard<mutex> lock(_socket_Mutex);
 		return _socket;
 	}
-	void setSocket_S(TCPsocket s)
+	void setSocket_S(NET_StreamSocket* s)
 	{
 		lock_guard<mutex> lock(_socket_Mutex);
 		_socket = s;
-	}
-
-	//------------------------------------
-private:
-	SDLNet_SocketSet _socketSet = SDLNet_AllocSocketSet(1);
-	mutex _socketSet_Mutex;
-public:
-	SDLNet_SocketSet getSocketSet_S()
-	{
-		lock_guard<mutex> lock(_socketSet_Mutex);
-		return _socketSet;
-	}
-	void setSocketSet_S(SDLNet_SocketSet s)
-	{
-		lock_guard<mutex> lock(_socketSet_Mutex);
-		_socketSet = s;
 	}
 #else
 
@@ -306,14 +292,14 @@ public:
 	//------------------------------------
 
 #ifndef ORBIS
-	shared_ptr<IPaddress> _serverAddress = nullptr;
+	shared_ptr<NetAddress> _serverAddress = nullptr;
 	mutex _serverAddress_Mutex;
-	shared_ptr<IPaddress> getServerAddress_S()
+	shared_ptr<NetAddress> getServerAddress_S()
 	{
 		lock_guard<mutex> lock(_serverAddress_Mutex);
 		return _serverAddress;
 	}
-	void setServerAddress_S(shared_ptr<IPaddress> b)
+	void setServerAddress_S(shared_ptr<NetAddress> b)
 	{
 		lock_guard<mutex> lock(_serverAddress_Mutex);
 		_serverAddress = b;

@@ -163,48 +163,18 @@ bool UDPPeerConnection::_ensureSocketIsOpen()
 	
 	if (getSocketIsOpen_S() == false)
 	{
-		if (getSocketAddedToSet_S())
-		{
-			if (SDLNet_UDP_DelSocket(getSocketSet_S(), getSocket_S()) < 0)
-			{
-				threadLogDebug_S("SDLNet_UDP_DelSocket: " + string(SDLNet_GetError()) + string(SDL_GetError()));
-				SDL_ClearError();
-			}
-			setSocketAddedToSet_S(false);
-		}
+		// SDL3_net: no socket sets or channel binding; the peer address
+		// travels with each datagram send.
+		setSocketAddedToSet_S(false);
 
-		setSocket_S(SDLNet_UDP_Open(localUDPPort));
+		setSocket_S(NET_CreateDatagramSocket(nullptr, (Uint16)localUDPPort));
 
 		threadLogDebug_S("Opened socket to peer on port " + to_string(localUDPPort));
 		if (!getSocket_S())
 		{
-			//SDLNet_FreeSocketSet(set);
-			threadLogError_S("Could not open socket to peer: " + string(SDLNet_GetError()) + string(SDL_GetError()));
+			threadLogError_S("Could not open socket to peer: " + string(SDL_GetError()));
 			SDL_ClearError();
 			somethingFailed = true;
-		}
-		else
-		{
-			if (getSocketAddedToSet_S() == false)
-			{
-				if (SDLNet_UDP_AddSocket(getSocketSet_S(), getSocket_S()) < 0)
-				{
-					threadLogDebug_S("SDLNet_UDP_AddSocket: " + string(SDLNet_GetError()) + string(SDL_GetError()));
-					SDL_ClearError();
-					somethingFailed = true;
-				}
-				else
-					setSocketAddedToSet_S(true);
-			}
-
-			//SDLNet_UDP_SetPacketLoss(getSocket_S(), 20);
-
-			int channel = SDLNet_UDP_Bind(getSocket_S(), -1, getPeerIPAddress_S().get());
-			if (channel < 0)
-			{
-				threadLogError_S("Could not bind socket: " + string(SDLNet_GetError()) + string(SDL_GetError()));
-				somethingFailed = true;
-			}
 		}
 
 		if (somethingFailed == false)
@@ -228,10 +198,13 @@ void UDPPeerConnection::_checkForIncomingPeerTraffic()
 		int numReady = 0;
 
 #ifndef ORBIS
-		numReady = SDLNet_CheckSockets(getSocketSet_S(), 0);
+		{
+			void* readySockets[1] = { (void*)getSocket_S() };
+			numReady = NET_WaitUntilInputAvailable(readySockets, 1, 0);
+		}
 		if (numReady < 0)
 		{
-			threadLogDebug_S("SDLNet_CheckSockets: " + string(SDLNet_GetError()) + string(SDL_GetError()));
+			threadLogDebug_S("NET_WaitUntilInputAvailable: " + string(SDL_GetError()));
 			SDL_ClearError();
 		}
 #else
@@ -240,13 +213,7 @@ void UDPPeerConnection::_checkForIncomingPeerTraffic()
 		int numPacketsReceived = 1;
 		if (numReady > 0)
 		{
-			int rd = 0;
-			
-#ifndef ORBIS
-			rd = SDLNet_SocketReady(getSocket_S());
-#else
-#endif
-			if (rd > 0)
+			if (true)
 			{
 
 				queue<string*> packetsToProcess;
@@ -255,8 +222,9 @@ void UDPPeerConnection::_checkForIncomingPeerTraffic()
 				{
 
 #ifndef ORBIS
-					UDPpacket *packet = SDLNet_AllocPacket(65535);
-					numPacketsReceived = SDLNet_UDP_Recv(getSocket_S(), packet);
+					NET_Datagram* packet = nullptr;
+					bool gotPacket = NET_ReceiveDatagram(getSocket_S(), &packet) && packet != nullptr;
+					numPacketsReceived = gotPacket ? 1 : 0;
 
 					if (numPacketsReceived > 0)
 					{
@@ -269,21 +237,18 @@ void UDPPeerConnection::_checkForIncomingPeerTraffic()
 //						}
 //#endif
 
-						string* packetData = new string((char*)packet->data, packet->len);
-						SDLNet_FreePacket(packet);
+						string* packetData = new string((char*)packet->buf, packet->buflen);
+						NET_DestroyDatagram(packet);
 
 						packetsToProcess.push(packetData);
-						
-					}
-					else if (numPacketsReceived < 0)
-					{
-						SDLNet_FreePacket(packet);
 
-						//connection lost
-						setDisconnectedFromPeer_S("Error receiving data.");
 					}
 					else
-						SDLNet_FreePacket(packet);
+					{
+						// No datagram available (SDL3_net cannot distinguish
+						// "none" from an error here); stop draining.
+						if (packet != nullptr) NET_DestroyDatagram(packet);
+					}
 #else
 
 #endif
@@ -360,8 +325,8 @@ void UDPPeerConnection::_checkForIncomingPeerTraffic()
 #ifndef ORBIS
 							if (sentPacketQueueSize_S() > 0)
 							{
-								UDPpacket *q = sentPacketQueueFront_S();
-								string queuedIDString = string((char*)q->data);
+								SentUDPPacket *q = sentPacketQueueFront_S();
+								string queuedIDString = q->data;
 								queuedIDString = queuedIDString.substr(0, queuedIDString.find(":"));
 								long long queuedID = -1;
 								try
@@ -378,7 +343,7 @@ void UDPPeerConnection::_checkForIncomingPeerTraffic()
 								{
 									//gotACK = true;
 									sentPacketQueuePop_S();
-									SDLNet_FreePacket(q);
+									delete q;
 									//lastSentPacketTime = System::currentHighResTimer();
 
 									if (_frameSentTimes.containsKey(queuedID))
@@ -480,44 +445,28 @@ void UDPPeerConnection::_checkForIncomingPeerTraffic()
 					delete sp;
 				}
 			}
-			else
-				if (rd < 0)
-				{
-#ifndef ORBIS
-					threadLogError_S("SDLNet_SocketReady Error: " + string(SDLNet_GetError()) + string(SDL_GetError()));
-					SDL_ClearError();
-#else
-#endif
-					setDisconnectedFromPeer_S("Error receiving data.");
-				}
+			// (SDL3_net: receive errors surface as "no datagram" above; the old
+			// SocketReady error branch has no equivalent and was removed.)
 		}
 	}
 }
 
 #ifndef ORBIS
 //===============================================================================================
-UDPpacket* UDPPeerConnection::makePacket(string s)
+UDPPeerConnection::SentUDPPacket* UDPPeerConnection::makePacket(string s)
 {//===============================================================================================
 
-	shared_ptr<IPaddress> peerAddress = getPeerIPAddress_S();
+	shared_ptr<NetAddress> peerAddress = getPeerIPAddress_S();
 	if (peerAddress == nullptr)
 	{
 		threadLogWarn_S("peerAddress was null.");
 		return nullptr;
 	}
 
-	UDPpacket * packet = SDLNet_AllocPacket((int)s.length());
-	packet->channel = -1;
-	packet->address = *peerAddress;
-	for (int i = 0; i < (int)s.length(); i++)
-	{
-		packet->data[i] = s[i];
-	}
-	packet->len = (int)s.length();
-	//SDLNet_FreePacket(packet);
-
-	//packet gets freed when ack received
-
+	//packet gets deleted when ack received
+	SentUDPPacket* packet = new SentUDPPacket();
+	packet->data = s;
+	packet->address = peerAddress;
 	return packet;
 
 }
@@ -615,7 +564,7 @@ void UDPPeerConnection::_writeQueuedPackets()
 		string s = packetMessageQueueFront_S();
 
 #ifndef ORBIS
-		UDPpacket *packet = makePacket(s);
+		SentUDPPacket *packet = makePacket(s);
 		if (packet == nullptr)
 		{
 			_writePacketWait += 2000;
@@ -623,10 +572,11 @@ void UDPPeerConnection::_writeQueuedPackets()
 			return;
 		}
 
-		if (SDLNet_UDP_Send(getSocket_S(), -1, packet) == 0)
+		if (!NET_SendDatagram(getSocket_S(), packet->address->addr, packet->address->port,
+			packet->data.data(), (int)packet->data.size()))
 		{
 			_writePacketWait += 2000;
-			SDLNet_FreePacket(packet);
+			delete packet;
 			threadLogWarn_S("Could not send UDP packet");
 		}
 		else
@@ -792,18 +742,12 @@ void UDPPeerConnection::setDisconnectedFromPeer_S(string reason)
 	threadLogWarn_S(string("Disconnected from " + getFriendData_S().userName + ": " + reason));
 	Main::console->add("Disconnected from " + getFriendData_S().userName + ": " + reason, 5000, BobColor::red);
 
-	SDLNet_UDP_Close(getSocket_S());
-
-	if (getSocketAddedToSet_S())
+	if (getSocket_S() != nullptr)
 	{
-		if (SDLNet_UDP_DelSocket(getSocketSet_S(), getSocket_S()) < 0)
-		{
-			threadLogWarn_S("SDLNet_TCP_DelSocket: " + string(SDLNet_GetError()) + string(SDL_GetError()));
-			SDL_ClearError();
-		}
-
-		setSocketAddedToSet_S(false);
+		NET_DestroyDatagramSocket(getSocket_S());
+		setSocket_S(nullptr);
 	}
+	setSocketAddedToSet_S(false);
 
 #else
 
@@ -906,28 +850,18 @@ void UDPPeerConnection::writeUnreliable_S(string s)
 	}
 
 #ifndef ORBIS
-	shared_ptr<IPaddress> peerAddress = getPeerIPAddress_S();
+	shared_ptr<NetAddress> peerAddress = getPeerIPAddress_S();
 	if (peerAddress == nullptr)
 	{
 		threadLogWarn_S("peerAddress was null.");
 		return;
 	}
 
-	UDPpacket * packet = SDLNet_AllocPacket((int)s.length());
-	packet->channel = -1;
-	packet->address = *peerAddress;
-	for (int i = 0; i < (int)s.length(); i++)
-	{
-		packet->data[i] = s[i];
-	}
-	packet->len = (int)s.length();
-
-	if (SDLNet_UDP_Send(getSocket_S(), -1, packet) == 0)
+	if (!NET_SendDatagram(getSocket_S(), peerAddress->addr, peerAddress->port,
+		s.data(), (int)s.size()))
 	{
 		threadLogWarn_S("Could not send UDP packet");
 	}
-
-	SDLNet_FreePacket(packet);
 #else
 
 #endif

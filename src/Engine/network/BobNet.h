@@ -7,10 +7,60 @@
 #include "bobtypes.h"
 #include <thread>
 #include <queue>
+#ifndef ORBIS
+// SDL3_net (NET_*) replaced SDL2_net: no UDPsocket/IPaddress/socket sets.
+#include <SDL3_net/SDL_net.h>
+#endif
 class UDPPeerConnection;
 class TCPServerConnection;
 class Logger;
 class Engine;
+
+#ifndef ORBIS
+// Value-type replacement for SDL2_net's IPaddress: SDL3_net addresses are
+// opaque and refcounted, and the port travels separately. Resolution was
+// synchronous in SDL2_net, so resolve() waits (bounded) for NET's async
+// resolver to finish.
+struct NetAddress
+{
+	NET_Address* addr = nullptr;
+	Uint16 port = 0;
+
+	NetAddress() = default;
+	NetAddress(const NetAddress& o) : port(o.port)
+	{
+		addr = o.addr;
+		if (addr) NET_RefAddress(addr);
+	}
+	NetAddress& operator=(const NetAddress& o)
+	{
+		if (this != &o)
+		{
+			if (addr) NET_UnrefAddress(addr);
+			addr = o.addr;
+			if (addr) NET_RefAddress(addr);
+			port = o.port;
+		}
+		return *this;
+	}
+	~NetAddress() { if (addr) NET_UnrefAddress(addr); }
+
+	bool resolve(const string& host, int p)
+	{
+		port = (Uint16)p;
+		addr = NET_ResolveHostname(host.c_str());
+		if (addr == nullptr) return false;
+		if (NET_WaitUntilResolved(addr, 10000) != NET_SUCCESS)
+		{
+			NET_UnrefAddress(addr);
+			addr = nullptr;
+			return false;
+		}
+		return true;
+	}
+	string hostString() const { return addr ? string(NET_GetAddressString(addr)) : string(""); }
+};
+#endif
 
 class BobNet
 {
@@ -100,35 +150,21 @@ public:
 	
 #ifndef ORBIS
 	//------------------------------------
+	// SDL3_net has no socket sets; readiness is polled per socket with
+	// NET_WaitUntilInputAvailable, so the old socket-set state is gone.
 private:
-	static UDPsocket _socket;
+	static NET_DatagramSocket* _socket;
 	static mutex _socket_Mutex;
 public:
-	static UDPsocket getSocket_S()
+	static NET_DatagramSocket* getSocket_S()
 	{
 		lock_guard<mutex> lock(_socket_Mutex);
 		return _socket;
 	}
-	static void setSocket_S(UDPsocket s)
+	static void setSocket_S(NET_DatagramSocket* s)
 	{
 		lock_guard<mutex> lock(_socket_Mutex);
 		_socket = s;
-	}
-
-	//------------------------------------
-private:
-	static SDLNet_SocketSet _socketSet;
-	static mutex _socketSet_Mutex;
-public:
-	static SDLNet_SocketSet getSocketSet_S()
-	{
-		lock_guard<mutex> lock(_socketSet_Mutex);
-		return _socketSet;
-	}
-	static void setSocketSet_S(SDLNet_SocketSet s)
-	{
-		lock_guard<mutex> lock(_socketSet_Mutex);
-		_socketSet = s;
 	}
 #else
 
@@ -185,47 +221,57 @@ public:
 
 #ifndef ORBIS
 private:
-	static IPaddress* _stunServerIPAddress_S;
+	static NET_Address* _stunServerIPAddress_S;
 	static int _stunServerPort_S;
 	static mutex _stunServerIPAddress_Mutex;
 public:
-	static IPaddress* getStunServerIPAddress_S()
+	static NET_Address* getStunServerIPAddress_S()
 	{
 		lock_guard<mutex> lock(_stunServerIPAddress_Mutex);
 		return _stunServerIPAddress_S;
+	}
+	static int getStunServerPort_S()
+	{
+		lock_guard<mutex> lock(_stunServerIPAddress_Mutex);
+		return _stunServerPort_S;
 	}
 	static void setStunServerIPAddress_S(string ipAddressString, int port)
 	{
 
 		lock_guard<mutex> lock(_stunServerIPAddress_Mutex);
 
+		if (_stunServerIPAddress_S != nullptr)
+		{
+			NET_UnrefAddress(_stunServerIPAddress_S);
+			_stunServerIPAddress_S = nullptr;
+		}
+		_stunServerPort_S = port;
+
 		if (ipAddressString == "")
 		{
 #ifdef _DEBUG
 			threadLogDebug_S("Set STUN address to null");
 #endif
+			return;
+		}
+
+		// NET_ResolveHostname is asynchronous; SDLNet_ResolveHost was
+		// synchronous, so wait (bounded) for resolution to finish.
+		_stunServerIPAddress_S = NET_ResolveHostname(ipAddressString.c_str());
+		if (_stunServerIPAddress_S == nullptr ||
+			NET_WaitUntilResolved(_stunServerIPAddress_S, 10000) != NET_SUCCESS)
+		{
+			threadLogWarn_S("Could not resolve STUN host: " + string(SDL_GetError()));
+			SDL_ClearError();
 			if (_stunServerIPAddress_S != nullptr)
 			{
-				delete _stunServerIPAddress_S;
+				NET_UnrefAddress(_stunServerIPAddress_S);
 				_stunServerIPAddress_S = nullptr;
 			}
-			_stunServerPort_S = port;
+			return;
 		}
-		else
-		{
-			_stunServerIPAddress_S = new IPaddress();
-			_stunServerPort_S = port;
 
-			if (SDLNet_ResolveHost(_stunServerIPAddress_S, ipAddressString.c_str(), port) < 0)
-			{
-				threadLogWarn_S("Could not resolve STUN host: " + string(SDLNet_GetError()));
-				SDL_ClearError();
-				_stunServerIPAddress_S = nullptr;
-			}
-
-			threadLogDebug_S("Set STUN address to " + ipAddressString + ":" + to_string(port));
-
-		}
+		threadLogDebug_S("Set STUN address to " + ipAddressString + ":" + to_string(port));
 	}
 
 #else

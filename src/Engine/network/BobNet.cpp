@@ -188,11 +188,8 @@ mutex BobNet::threadLog_Mutex;
 thread BobNet::t;
 
 #ifndef ORBIS
-UDPsocket BobNet::_socket = UDPsocket();
+NET_DatagramSocket* BobNet::_socket = nullptr;
 mutex BobNet::_socket_Mutex;
-
-SDLNet_SocketSet BobNet::_socketSet = SDLNet_AllocSocketSet(1);
-mutex BobNet::_socketSet_Mutex;
 #else
 #endif
 
@@ -209,7 +206,7 @@ int BobNet::_stunChannel = -1;
 mutex BobNet::_stunChannel_Mutex;
 
 #ifndef ORBIS
-IPaddress* BobNet::_stunServerIPAddress_S = nullptr;
+NET_Address* BobNet::_stunServerIPAddress_S = nullptr;
 int BobNet::_stunServerPort_S = -1;
 mutex BobNet::_stunServerIPAddress_Mutex;
 #else
@@ -292,49 +289,20 @@ bool BobNet::_ensureSocketIsOpen()
 #endif
 	if (getSocketIsOpen_S() == false)
 	{
-		if (getSocketAddedToSet_S())
-		{
-#ifndef ORBIS
-			if (SDLNet_UDP_DelSocket(getSocketSet_S(), getSocket_S()) < 0)
-			{
-				threadLogDebug_S("SDLNet_UDP_DelSocket: " + string(SDLNet_GetError()) + string(SDL_GetError()));
-				SDL_ClearError();
-			}
-#else
-#endif
-			setSocketAddedToSet_S(false);
-		}
+		// SDL3_net: no socket sets or channel binding; datagrams carry
+		// their destination address per send.
+		setSocketAddedToSet_S(false);
 
 #ifndef ORBIS
-		setSocket_S(SDLNet_UDP_Open(Main::STUNServerUDPPort));//this is client port, not server port, so it is +1 if the server is hosted locally
+		setSocket_S(NET_CreateDatagramSocket(nullptr, (Uint16)Main::STUNServerUDPPort));//this is client port, not server port, so it is +1 if the server is hosted locally
 		log.debug("Opened socket to STUN server on port " + to_string(Main::STUNServerUDPPort));
 		if (!getSocket_S())
 		{
-			//SDLNet_FreeSocketSet(set);
-			threadLogError_S("SDLNet_UDP_Open stunServerAddress: " + string(SDLNet_GetError()) + string(SDL_GetError()));
+			threadLogError_S("NET_CreateDatagramSocket stunServerAddress: " + string(SDL_GetError()));
 			SDL_ClearError();
 			return false;
 		}
-#else
-#endif
-
-		if (getSocketAddedToSet_S() == false)
-		{
-#ifndef ORBIS
-			if (SDLNet_UDP_AddSocket(getSocketSet_S(), getSocket_S()) < 0)
-			{
-				threadLogDebug_S("SDLNet_UDP_AddSocket: " + string(SDLNet_GetError()) + string(SDL_GetError()));
-				SDL_ClearError();
-			}
-			else
-				setSocketAddedToSet_S(true);
-#else
-#endif
-		}
-
-
-#ifndef ORBIS
-		setStunChannel_S(SDLNet_UDP_Bind(getSocket_S(), -1, getStunServerIPAddress_S()));
+		setStunChannel_S(-1);
 #else
 #endif
 
@@ -350,76 +318,44 @@ bool BobNet::_checkForIncomingSTUNTraffic()
 	if (_ensureSocketIsOpen() == false)return false;
 
 #ifndef ORBIS
-	int numReady = 0;
-	
-
-	numReady = SDLNet_CheckSockets(getSocketSet_S(), 0);
+	// SDL3_net: poll the single datagram socket directly (no socket set).
+	void* readySockets[1] = { (void*)getSocket_S() };
+	int numReady = NET_WaitUntilInputAvailable(readySockets, 1, 0);
 	if (numReady < 0)
 	{
-		threadLogDebug_S("SDLNet_CheckSockets: " + string(SDLNet_GetError()) + string(SDL_GetError()));
+		threadLogDebug_S("NET_WaitUntilInputAvailable: " + string(SDL_GetError()));
 		SDL_ClearError();
 	}
 
-	int numPacketsReceived = 0;
-
 	if (numReady > 0)
 	{
+		NET_Datagram* packet = nullptr;
+		bool received = NET_ReceiveDatagram(getSocket_S(), &packet);
 
-		int rd = 0;
-
-
-		rd = SDLNet_SocketReady(getSocket_S());
-
-		if (rd > 0)
+		if (received && packet != nullptr)
 		{
-			UDPpacket *packet = SDLNet_AllocPacket(10000);
-			numPacketsReceived = SDLNet_UDP_Recv(getSocket_S(), packet);
-
-			if (numPacketsReceived > 0)
+			if (string(NET_GetAddressString(packet->addr)) !=
+				string(NET_GetAddressString(getStunServerIPAddress_S())))
 			{
-				if (packet->address.host != getStunServerIPAddress_S()->host)
-				{
-					threadLogError_S("STUN address didn't match in incoming packet.");
-				}
-
-				string s = string((char*)packet->data, packet->len);
-
-				SDLNet_FreePacket(packet);
-
-				//return udpSTUNMessageReceived(s);
-				stunMessageQueuePush_S(s);
-				return true;
-
+				threadLogError_S("STUN address didn't match in incoming packet.");
 			}
-			else if (numPacketsReceived < 0)
-			{
-				SDLNet_FreePacket(packet);
-				//connection lost
-				SDLNet_UDP_Close(getSocket_S());
 
-				if (getSocketAddedToSet_S())
-				{
-					if (SDLNet_UDP_DelSocket(getSocketSet_S(), getSocket_S()) < 0)
-					{
-						threadLogDebug_S("SDLNet_UDP_DelSocket: " + string(SDLNet_GetError()) + string(SDL_GetError()));
-						SDL_ClearError();
-					}
+			string s = string((char*)packet->buf, packet->buflen);
 
-					setSocketAddedToSet_S(false);
-				}
-				setSocketIsOpen_S(false);
-				return false;
-			}
-			SDLNet_FreePacket(packet);
-		}
-		else
-		if (rd < 0)
-		{
-			threadLogError_S("SDLNet_TCP_Recv Error: " + string(SDLNet_GetError()) + string(SDL_GetError()));
-			SDL_ClearError();
-			return false;
+			NET_DestroyDatagram(packet);
+
+			//return udpSTUNMessageReceived(s);
+			stunMessageQueuePush_S(s);
+			return true;
 		}
 
+		// Receive failed after readiness was signalled: treat as lost.
+		if (packet != nullptr) NET_DestroyDatagram(packet);
+		NET_DestroyDatagramSocket(getSocket_S());
+		setSocket_S(nullptr);
+		setSocketAddedToSet_S(false);
+		setSocketIsOpen_S(false);
+		return false;
 	}
 
 #else
@@ -541,20 +477,11 @@ void BobNet::sendSTUNRequest(long long myUserID, long long friendUserID, int myP
 
 	const char* buf = s.c_str();
 
-	int sent = 0;
+	// SDL3_net: destination travels with each datagram (no channels).
+	bool sent = NET_SendDatagram(getSocket_S(), getStunServerIPAddress_S(),
+		(Uint16)getStunServerPort_S(), buf, (int)s.length());
 
-
-	//UDPpacket * packet = SDLNet_AllocPacket(s.length());
-	UDPpacket packet;
-	packet.channel = -1;
-	packet.address = *getStunServerIPAddress_S();
-	packet.data = (Uint8*)buf;
-	packet.len = (int)s.length();
-	//SDLNet_FreePacket(packet);
-
-	sent += SDLNet_UDP_Send(getSocket_S(), -1, &packet);
-
-	if (sent == 0)
+	if (!sent)
 	{
 		log.error("Could not send UDP packet to STUN server");
 	}

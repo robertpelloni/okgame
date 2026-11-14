@@ -152,35 +152,20 @@ public:
 
 #ifndef ORBIS
 	//------------------------------------
+	// SDL3_net: no socket sets; poll with NET_WaitUntilInputAvailable.
 private:
-	UDPsocket _socket = UDPsocket();
+	NET_DatagramSocket* _socket = nullptr;
 	mutex _socket_Mutex;
 public:
-	UDPsocket getSocket_S()
+	NET_DatagramSocket* getSocket_S()
 	{
 		lock_guard<mutex> lock(_socket_Mutex);
 		return _socket;
 	}
-	void setSocket_S(UDPsocket s)
+	void setSocket_S(NET_DatagramSocket* s)
 	{
 		lock_guard<mutex> lock(_socket_Mutex);
 		_socket = s;
-	}
-
-	//------------------------------------
-private:
-	SDLNet_SocketSet _socketSet = SDLNet_AllocSocketSet(1);
-	mutex _socketSet_Mutex;
-public:
-	SDLNet_SocketSet getSocketSet_S()
-	{
-		lock_guard<mutex> lock(_socketSet_Mutex);
-		return _socketSet;
-	}
-	void setSocketSet_S(SDLNet_SocketSet s)
-	{
-		lock_guard<mutex> lock(_socketSet_Mutex);
-		_socketSet = s;
 	}
 #else
 
@@ -221,14 +206,19 @@ public:
 
 #ifndef ORBIS
 private:
-	shared_ptr<IPaddress> _peerIPAddress_S = nullptr;
+	shared_ptr<NetAddress> _peerIPAddress_S = nullptr;
 	int _peerPort_S = -1;
 	mutex _peerIPAddress_Mutex;
 public:
-	shared_ptr<IPaddress> getPeerIPAddress_S()
+	shared_ptr<NetAddress> getPeerIPAddress_S()
 	{
 		lock_guard<mutex> lock(_peerIPAddress_Mutex);
 		return _peerIPAddress_S;
+	}
+	int getPeerPort_S()
+	{
+		lock_guard<mutex> lock(_peerIPAddress_Mutex);
+		return _peerPort_S;
 	}
 	void setPeerIPAddress_S(string ipAddressString, int port)
 	{
@@ -240,25 +230,22 @@ public:
 #ifdef _DEBUG
 			threadLogDebug_S("Set peer address to null");
 #endif
-			if (_peerIPAddress_S != nullptr)
-			{
-				_peerIPAddress_S = nullptr;
-			}
+			_peerIPAddress_S = nullptr;
 			_peerPort_S = port;
 		}
 		else
 		{
-			_peerIPAddress_S = make_shared<IPaddress>();
+			_peerIPAddress_S = make_shared<NetAddress>();
 			_peerPort_S = port;
 
-			if (SDLNet_ResolveHost(_peerIPAddress_S.get(), ipAddressString.c_str(), port) < 0)
+			if (!_peerIPAddress_S->resolve(ipAddressString, port))
 			{
-				threadLogWarn_S("Could not resolve peer host: " + string(SDLNet_GetError()));
+				threadLogWarn_S("Could not resolve peer host: " + string(SDL_GetError()));
 				SDL_ClearError();
+				_peerIPAddress_S = nullptr;
 			}
 
 			threadLogDebug_S("Set peer address to " + ipAddressString + ":" + to_string(port));
-			//threadLogDebug_S("Internal address looks like " + to_string(_peerIPAddress_S->host) + ":" + to_string(_peerIPAddress_S->port));
 		}
 	}
 
@@ -294,11 +281,17 @@ public:
 	//------------------------------------
 
 #ifndef ORBIS
+	// A sent datagram kept until ACKed (was SDL2_net UDPpacket*).
+	struct SentUDPPacket
+	{
+		string data;
+		shared_ptr<NetAddress> address;
+	};
 private:
-	queue<UDPpacket*> _sentPacketQueue;
+	queue<SentUDPPacket*> _sentPacketQueue;
 	mutex _sentPacketQueue_Mutex;
 public:
-	UDPpacket* sentPacketQueueFront_S()
+	SentUDPPacket* sentPacketQueueFront_S()
 	{
 		lock_guard<mutex> lock(_sentPacketQueue_Mutex);
 		return _sentPacketQueue.front();
@@ -313,7 +306,7 @@ public:
 		lock_guard<mutex> lock(_sentPacketQueue_Mutex);
 		_sentPacketQueue.pop();
 	}
-	void sentPacketQueuePush_S(UDPpacket* p)
+	void sentPacketQueuePush_S(SentUDPPacket* p)
 	{
 		lock_guard<mutex> lock(_sentPacketQueue_Mutex);
 		_sentPacketQueue.push(p);
@@ -528,7 +521,7 @@ private:
 	void _checkForIncomingPeerTraffic();
 
 #ifndef ORBIS
-	UDPpacket* makePacket(string s);
+	SentUDPPacket* makePacket(string s);
 #else
 
 #endif

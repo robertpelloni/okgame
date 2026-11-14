@@ -5,6 +5,7 @@
 
 #pragma once
 #include "oktypes.h"
+#include "BobNet.h" // NetAddress (SDL3_net replacement for IPaddress)
 class UDPPeerConnection;
 class TCPServerConnection;
 class Logger;
@@ -89,35 +90,20 @@ public:
 	}
 	
 	//------------------------------------
+	// SDL3_net: no socket sets; poll with NET_WaitUntilInputAvailable.
 private:
-	static UDPsocket _socket;
+	static NET_DatagramSocket* _socket;
 	static mutex _socket_Mutex;
 public:
-	static UDPsocket getSocket_S()
+	static NET_DatagramSocket* getSocket_S()
 	{
 		lock_guard<mutex> lock(_socket_Mutex);
 		return _socket;
 	}
-	static void setSocket_S(UDPsocket s)
+	static void setSocket_S(NET_DatagramSocket* s)
 	{
 		lock_guard<mutex> lock(_socket_Mutex);
 		_socket = s;
-	}
-
-	//------------------------------------
-private:
-	static SDLNet_SocketSet _socketSet;
-	static mutex _socketSet_Mutex;
-public:
-	static SDLNet_SocketSet getSocketSet_S()
-	{
-		lock_guard<mutex> lock(_socketSet_Mutex);
-		return _socketSet;
-	}
-	static void setSocketSet_S(SDLNet_SocketSet s)
-	{
-		lock_guard<mutex> lock(_socketSet_Mutex);
-		_socketSet = s;
 	}
 
 	//------------------------------------
@@ -168,47 +154,46 @@ public:
 
 	//------------------------------------
 private:
-	static sp<IPaddress> _stunServerIPAddress_S;
+	static sp<NetAddress> _stunServerIPAddress_S;
 	static int _stunServerPort_S;
 	static mutex _stunServerIPAddress_Mutex;
 public:
-	static sp<IPaddress> getStunServerIPAddress_S()
+	static sp<NetAddress> getStunServerIPAddress_S()
 	{
 		lock_guard<mutex> lock(_stunServerIPAddress_Mutex);
 		return _stunServerIPAddress_S;
+	}
+	static int getStunServerPort_S()
+	{
+		lock_guard<mutex> lock(_stunServerIPAddress_Mutex);
+		return _stunServerPort_S;
 	}
 	static void setStunServerIPAddress_S(string ipAddressString, int port)
 	{
 
 		lock_guard<mutex> lock(_stunServerIPAddress_Mutex);
 
+		_stunServerIPAddress_S = nullptr;
+		_stunServerPort_S = port;
+
 		if (ipAddressString == "")
 		{
 #ifdef _DEBUG
 			threadLogDebug_S("Set STUN address to null");
 #endif
-			if (_stunServerIPAddress_S != nullptr)
-			{
-				//delete _stunServerIPAddress_S;
-				_stunServerIPAddress_S = nullptr;
-			}
-			_stunServerPort_S = port;
+			return;
 		}
-		else
+
+		_stunServerIPAddress_S = ms<NetAddress>();
+		if (!_stunServerIPAddress_S->resolve(ipAddressString, port))
 		{
-			_stunServerIPAddress_S = ms<IPaddress>();
-			_stunServerPort_S = port;
-
-			if (SDLNet_ResolveHost(_stunServerIPAddress_S.get(), ipAddressString.c_str(), port) < 0)
-			{
-				threadLogWarn_S("Could not resolve STUN host: " + string(SDLNet_GetError()));
-				SDL_ClearError();
-				_stunServerIPAddress_S = nullptr;
-			}
-
-			threadLogDebug_S("Set STUN address to " + ipAddressString + ":" + to_string(port));
-
+			threadLogWarn_S("Could not resolve STUN host: " + string(SDL_GetError()));
+			SDL_ClearError();
+			_stunServerIPAddress_S = nullptr;
+			return;
 		}
+
+		threadLogDebug_S("Set STUN address to " + ipAddressString + ":" + to_string(port));
 	}
 	//------------------------------------
 
