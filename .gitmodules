@@ -274,3 +274,6 @@
 	path = lib/projectm
 	url = https://github.com/robertpelloni/projectm
 
+[submodule "lib/bobsgameonlinejava"]
+	path = lib/bobsgameonlinejava
+	url = https://github.com/robertpelloni/bobsgameonlinejava
