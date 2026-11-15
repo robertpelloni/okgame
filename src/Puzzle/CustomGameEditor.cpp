@@ -121,6 +121,41 @@ void CustomGameEditorControl::initPreviewGame()
 	// Preview bootstrapping stays stubbed for now; this parity pass focuses on live editing state.
 }
 
+void CustomGameEditorControl::Render(Gwen::Skin::Base* skin)
+{
+	Gwen::Controls::Base::Render(skin);
+
+	Rotation* rotation = getSelectedRotation();
+	if (rotation == nullptr) return;
+
+	Gwen::Rect bounds = GetInnerBounds();
+
+	int startX = bounds.x + 200;
+	int startY = bounds.y + 100;
+	int blockSize = 16;
+
+	shared_ptr<PieceType> pieceType = getSelectedPieceType();
+	Gwen::Color blockColor = Gwen::Color(100, 100, 255, 255);
+
+	if (pieceType != nullptr && pieceType->blocks.size() > 0)
+	{
+		BlockType* bType = pieceType->blocks.get(0).get();
+		if (bType && bType->useSpecialColor)
+		{
+			blockColor = Gwen::Color(bType->color.r * 255, bType->color.g * 255, bType->color.b * 255, 255);
+		}
+	}
+
+	for (int i = 0; i < rotation->blockOffsets.size(); i++)
+	{
+		BlockOffset* offset = rotation->blockOffsets.get(i);
+		skin->GetRender()->SetDrawColor(blockColor);
+		skin->GetRender()->DrawFilledRect(Gwen::Rect(startX + offset->x() * blockSize, startY + offset->y() * blockSize, blockSize, blockSize));
+		skin->GetRender()->SetDrawColor(Gwen::Color(0, 0, 0, 100));
+		skin->GetRender()->DrawLinedRect(Gwen::Rect(startX + offset->x() * blockSize, startY + offset->y() * blockSize, blockSize, blockSize));
+	}
+}
+
 void CustomGameEditorControl::saveAllToCurrentGameType()
 {
 	refreshEditorState();
@@ -215,6 +250,18 @@ void CustomGameEditorControl::removePiece()
 {
 	if (currentGameType == nullptr) return;
 	if (selectedPieceIndex < 0 || selectedPieceIndex >= currentGameType->pieceTypes.size()) return;
+
+	static int removalConfirmations = 0;
+	if (removalConfirmations == 0)
+	{
+		if (removePieceBtn) removePieceBtn->SetText("Click Again to Confirm");
+		removalConfirmations++;
+		return;
+	}
+
+	if (removePieceBtn) removePieceBtn->SetText("Remove Piece");
+	removalConfirmations = 0;
+
 	currentGameType->pieceTypes.removeAt(selectedPieceIndex);
 	if (currentGameType->pieceTypes.size() == 0)
 	{
@@ -260,6 +307,18 @@ void CustomGameEditorControl::removeRotation()
 {
 	shared_ptr<PieceType> pieceType = getSelectedPieceType();
 	if (pieceType == nullptr || pieceType->rotationSet.size() == 0) return;
+
+	static int removalConfirmationsRot = 0;
+	if (removalConfirmationsRot == 0)
+	{
+		if (removeRotationBtn) removeRotationBtn->SetText("Click Again to Confirm");
+		removalConfirmationsRot++;
+		return;
+	}
+
+	if (removeRotationBtn) removeRotationBtn->SetText("Remove Rotation");
+	removalConfirmationsRot = 0;
+
 	pieceType->rotationSet.removeAt(selectedRotationIndex);
 	if (pieceType->rotationSet.size() == 0)
 	{
@@ -361,6 +420,9 @@ void CustomGameEditorControl::refreshEditorState()
 {
 	shared_ptr<PieceType> pieceType = getSelectedPieceType();
 	Rotation* rotation = getSelectedRotation();
+
+	if (removePieceBtn) removePieceBtn->SetText("Remove Piece");
+	if (removeRotationBtn) removeRotationBtn->SetText("Remove Rotation");
 
 	string pieceSummary = "Piece: none";
 	if (pieceType != nullptr)

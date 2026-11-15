@@ -13,6 +13,7 @@ concurrency:
 
 env:
   BUILD_TYPE: Release
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   windows:
@@ -21,13 +22,13 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7
         with:
           submodules: recursive
           fetch-depth: 1
 
       - name: Cache submodules
-        uses: actions/cache@v4
+        uses: actions/cache@v4.0.2
         with:
           path: |
             lib/
@@ -37,13 +38,13 @@ jobs:
             submodules-win-
 
       - name: Setup MSVC
-        uses: ilammy/msvc-dev-cmd@v1
+        uses: ilammy/msvc-dev-cmd@v1.13.0
 
       - name: Setup Ninja
         uses: seanmiddleditch/gha-setup-ninja@v5
 
       - name: Cache CMake build
-        uses: actions/cache@v4
+        uses: actions/cache@v4.0.2
         with:
           path: build
           key: build-win-${{ github.sha }}
@@ -61,7 +62,7 @@ jobs:
         run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.3
         with:
           name: bobsgame-windows-${{ github.sha }}
           path: |
@@ -76,13 +77,13 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7
         with:
           submodules: recursive
           fetch-depth: 1
 
       - name: Cache submodules
-        uses: actions/cache@v4
+        uses: actions/cache@v4.0.2
         with:
           path: |
             lib/
@@ -92,7 +93,7 @@ jobs:
             submodules-linux-
 
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.14
         with:
           key: ccache-linux-${{ hashFiles('**/CMakeLists.txt') }}
           restore-keys: |
@@ -119,7 +120,7 @@ jobs:
             pkg-config
 
       - name: Cache CMake build
-        uses: actions/cache@v4
+        uses: actions/cache@v4.0.2
         with:
           path: build
           key: build-linux-${{ github.sha }}
@@ -137,7 +138,7 @@ jobs:
         run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.3.3
         with:
           name: bobsgame-linux-${{ github.sha }}
           path: |
