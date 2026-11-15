@@ -1,51 +1,56 @@
-#!/bin/sh
-for file in *.so*
-do
-	name=${file##*/}
-	echo $name
+#!/usr/bin/env bash
+#------------------------------------------------------------------------------
+# OKGame / bob's game - Linux Deployment Preparation Script
+# Copies runtime shared object dependencies and strips non-system libraries.
+#------------------------------------------------------------------------------
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "${SCRIPT_DIR}"
+
+echo "Preparing bobsgame environment in ${SCRIPT_DIR}..."
+
+if [[ -f "./bobsgame" ]]; then
+    chmod 755 "./bobsgame"
+    if command -v strip >/dev/null 2>&1; then
+        strip "./bobsgame" || true
+    fi
+else
+    echo "Notice: ./bobsgame binary not found yet; skipping strip."
+fi
+
+# Blacklist of system libraries that must NOT be vendored locally to prevent glibc/driver conflicts
+BLACKLIST=(
+    "VBoxOGLcrutil.so"
+    "libGL.so*"
+    "libc.so*"
+    "libdl.so*"
+    "libm.so*"
+    "libpthread.so*"
+    "libresolv.so*"
+    "libasyncns*"
+    "libdbus*"
+    "libffi*"
+    "libgcc_s*"
+    "libglib*"
+    "libnsl*"
+    "libreadline*"
+    "librt*"
+    "libstdc++*"
+    "libtinfo*"
+    "libway*"
+    "libwrap*"
+    "libX*"
+    "libxcb*"
+    "libxkbcommon*"
+    "libxshm*"
+    "libasound.so.2"
+    "libpulse*"
+)
+
+for pattern in "${BLACKLIST[@]}"; do
+    # Remove matching files non-destructively ignoring if missing
+    find . -maxdepth 1 -name "${pattern}" -exec rm -f {} + 2>/dev/null || true
 done
 
-sudo ldd ./bobsgame | grep "=> /" | awk '{print $3}' | xargs -I '{}' cp -v '{}' ./
-sudo ldd ./libPocoFoundation.so.48 | grep "=> /" | awk '{print $3}' | xargs -I '{}' cp -v '{}' ./
-sudo ldd ./libPocoNet.so.48 | grep "=> /" | awk '{print $3}' | xargs -I '{}' cp -v '{}' ./
-sudo ldd ./libPocoJSON.so.48 | grep "=> /" | awk '{print $3}' | xargs -I '{}' cp -v '{}' ./
-sudo ldd ./libPocoXML.so.48 | grep "=> /" | awk '{print $3}' | xargs -I '{}' cp -v '{}' ./
-sudo ldd ./libPocoUtil.so.48 | grep "=> /" | awk '{print $3}' | xargs -I '{}' cp -v '{}' ./
-sudo ldd ./libPocoZip.so.48 | grep "=> /" | awk '{print $3}' | xargs -I '{}' cp -v '{}' ./
-sudo ldd ./libCppUnit.so.1 | grep "=> /" | awk '{print $3}' | xargs -I '{}' cp -v '{}' ./
-sudo ldd ./libboost_serialization.so.1.62.0 | grep "=> /" | awk '{print $3}' | xargs -I '{}' cp -v '{}' ./
-sudo ldd ./bobsgame | grep "=> /" | awk '{print $3}' | xargs -I '{}' cp -v '{}' ./
-strip bobsgame
-chmod 755 bobsgame
-rm VBoxOGLcrutil.so
-rm libGL.so*
-rm libc.so*
-rm libdl.so*
-rm libm.so*
-rm libpthread.so*
-rm libresolv.so*
-
-rm libasyncns* #libasyncns is a C library for Linux/Unix for executing name service queries asynchronously
-rm libdbus* #D-Bus supplies both a system daemon (for events such as "new hardware device added" or "printer queue changed") and a per-user-login-session daemon (for general IPC needs among user applications).
-rm libffi* #The libffi library provides a portable, high level programming interface to various calling conventions
-rm libgcc_s* #GCC provides a low-level runtime library, libgcc.a or libgcc_s.so.1 on some platforms
-rm libglib* #GTK General purpose utility library
-rm libnsl* #libnsl - This library contains the public client interface for NIS(YP) and NIS+ in a IPv6 ready version
-rm libreadline* #The GNU Readline library provides a set of functions for use by applications that allow users to edit command lines as they are typed in
-rm librt* #librt, libposix4 - POSIX.1b Realtime Extensions library 
-rm libstdc++* #libc++ is a new implementation of the C++ standard library, targeting C++11
-rm libtinfo* #symlink to ncurses for use in cuda and other packages
-rm libway*
-rm libwrap* #TCP Wrapper is a host-based networking ACL system
-rm libX*
-rm libxcb* # The libxcb package provides an interface to the X Window System protocol
-rm libxkbcommon*
-rm libxshm*
-
-rm libasound.so.2
-rm libpulse*
-
-
-
-
-echo ok
+echo "Environment preparation complete."
