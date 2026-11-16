@@ -108,6 +108,7 @@ void cleanup()
 	if (mainObject != nullptr)
 	{
 		mainObject->cleanup();
+		SteamManager::shutdown();
 		delete mainObject;
 		mainObject = nullptr;
 	}
@@ -1183,9 +1184,27 @@ void Main::mainLoop()
 				System::updateUpdateTimers();
 				//this just lowers cpu usage
 				//Sleep(2); //TODO: vary this based on system speed
+
+                Uint64 start_update = SDL_GetPerformanceCounter();
 				updateMain();
+                Uint64 end_update = SDL_GetPerformanceCounter();
+
+                Uint64 start_render = SDL_GetPerformanceCounter();
 				renderMain();
+                Uint64 end_render = SDL_GetPerformanceCounter();
+
+                Uint64 start_swap = SDL_GetPerformanceCounter();
 				doSwap();
+                Uint64 end_swap = SDL_GetPerformanceCounter();
+
+                double update_ms = (double)((end_update - start_update) * 1000) / SDL_GetPerformanceFrequency();
+                double render_ms = (double)((end_render - start_render) * 1000) / SDL_GetPerformanceFrequency();
+                double swap_ms = (double)((end_swap - start_swap) * 1000) / SDL_GetPerformanceFrequency();
+
+                if (update_ms > 16.0 || render_ms > 16.0 || swap_ms > 16.0) {
+                    log.warn("Frame Sync Bottleneck Detected -> Update: " + to_string(update_ms) + "ms | Render: " + to_string(render_ms) + "ms | Swap: " + to_string(swap_ms) + "ms");
+                }
+
 				//System::framesrendered++;
 			}
 			else
@@ -1195,9 +1214,27 @@ void Main::mainLoop()
 				{
 					System::resetTotalRenderTicksPassed();
 					System::updateUpdateTimers();
-					updateMain();
-					renderMain();
-					doSwap();
+
+                Uint64 start_update = SDL_GetPerformanceCounter();
+				updateMain();
+                Uint64 end_update = SDL_GetPerformanceCounter();
+
+                Uint64 start_render = SDL_GetPerformanceCounter();
+				renderMain();
+                Uint64 end_render = SDL_GetPerformanceCounter();
+
+                Uint64 start_swap = SDL_GetPerformanceCounter();
+				doSwap();
+                Uint64 end_swap = SDL_GetPerformanceCounter();
+
+                double update_ms = (double)((end_update - start_update) * 1000) / SDL_GetPerformanceFrequency();
+                double render_ms = (double)((end_render - start_render) * 1000) / SDL_GetPerformanceFrequency();
+                double swap_ms = (double)((end_swap - start_swap) * 1000) / SDL_GetPerformanceFrequency();
+
+                if (update_ms > 16.0 || render_ms > 16.0 || swap_ms > 16.0) {
+                    log.warn("Frame Sync Bottleneck Detected -> Update: " + to_string(update_ms) + "ms | Render: " + to_string(render_ms) + "ms | Swap: " + to_string(swap_ms) + "ms");
+                }
+
 					//System::framesrendered++;
 				}
 				else
