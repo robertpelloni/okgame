@@ -20,6 +20,11 @@ class LogsPanel;
 class ControlsPanel;
 class SettingsPanel;
 
+namespace OKGame {
+	class EditorsPanel;
+	class GameEditorPanel;
+}
+
 
 class StuffMenu : public MenuPanel
 {
@@ -36,6 +41,9 @@ public:
 	shared_ptr<LogsPanel> logsPanel = nullptr;
 	shared_ptr<ControlsPanel> controlsPanel = nullptr;
 	shared_ptr<SettingsPanel> settingsPanel = nullptr;
+
+	shared_ptr<OKGame::EditorsPanel> editorsPanel = nullptr;
+	shared_ptr<OKGame::GameEditorPanel> gameEditorPanel = nullptr;
 
 
 	//ArrayList<ToggleButton*> stuffMenuTabs;

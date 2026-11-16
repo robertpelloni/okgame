@@ -3,6 +3,7 @@
 #include "../World.h"
 #include "../components/TransformComponent.h"
 #include "../../Utility/ControlsManager.h"
+#include "../../main.h"
 #include <cmath>
 
 namespace OKGame {
@@ -23,10 +24,13 @@ namespace OKGame {
             float dx = 0;
             float dy = 0;
 
-            if (ControlsManager::isLeftHeld()) dx -= 1.0f;
-            if (ControlsManager::isRightHeld()) dx += 1.0f;
-            if (ControlsManager::isUpHeld()) dy -= 1.0f;
-            if (ControlsManager::isDownHeld()) dy += 1.0f;
+            ControlsManager* cm = Main::getControlsManager();
+            if (cm) {
+                if (cm->BGCLIENT_LEFT_HELD) dx -= 1.0f;
+                if (cm->BGCLIENT_RIGHT_HELD) dx += 1.0f;
+                if (cm->BGCLIENT_UP_HELD) dy -= 1.0f;
+                if (cm->BGCLIENT_DOWN_HELD) dy += 1.0f;
+            }
 
             if (dx != 0 || dy != 0) {
                 float mag = std::sqrt(dx * dx + dy * dy);

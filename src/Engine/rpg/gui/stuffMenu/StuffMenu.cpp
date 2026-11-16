@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#include "subMenus/EditorsPanel.h"
+#include "subMenus/GameEditorPanel.h"
 
 //------------------------------------------------------------------------------
 //Copyright Robert Pelloni.
@@ -31,6 +33,9 @@ StuffMenu::StuffMenu()
 	controlsPanel = make_shared<ControlsPanel>();
 	settingsPanel = make_shared<SettingsPanel>();
 	debugInfoPanel = make_shared<DebugInfoPanel>();
+
+	editorsPanel = make_shared<OKGame::EditorsPanel>();
+	gameEditorPanel = make_shared<OKGame::GameEditorPanel>();
 
 	//
 	//   stuffMenuTabs = ArrayList<ToggleButton*>(8);
@@ -191,6 +196,9 @@ void StuffMenu::setAllInvisible()
 	friendsPanel->setVisible(false);
 	logsPanel->setVisible(false);
 	itemsPanel->setVisible(false);
+
+	editorsPanel->setActivated(false);
+	gameEditorPanel->setActivated(false);
 }
 
 void StuffMenu::openSubMenu()//SubPanel* subPanel)
@@ -211,6 +219,9 @@ void StuffMenu::init()
 	friendsPanel->init();
 	logsPanel->init();
 	itemsPanel->init();
+
+	editorsPanel->init();
+	gameEditorPanel->init();
 }
 
 void StuffMenu::update()
@@ -220,6 +231,15 @@ void StuffMenu::update()
 	if (getIsActivated() == false)
 	{
 		return;
+	}
+
+	if (editorsPanel->getIsActivated())
+	{
+		editorsPanel->update();
+	}
+	if (gameEditorPanel->getIsActivated())
+	{
+		gameEditorPanel->update();
 	}
 
 	//   if (debugInfoPanel->isVisible())
@@ -264,6 +284,15 @@ void StuffMenu::render()
 	if (getIsActivated() == false)
 	{
 		return;
+	}
+
+	if (editorsPanel->getIsActivated())
+	{
+		editorsPanel->render();
+	}
+	if (gameEditorPanel->getIsActivated())
+	{
+		gameEditorPanel->render();
 	}
 
 

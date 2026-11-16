@@ -7,45 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.0.32] - 2026-05-20
-
-### Added
-- **Native Empty Rotation Cleanup & Center All:** Added native custom editor controls to mirror the newly shipped web and Java cleanup and geometry workflow.
-
-### Changed
-- Bumped local version to `2.0.32`.
-
-### Validation
-- Implemented native `CustomGameEditorControl::centerAllRotations()` and `CustomGameEditorControl::emptyRotationCleanup()`.
-
-
 ## [2.0.28] - 2026-06-15
 
 ### Added
-- **Submodule:** Integrated `bobsgameonlinejava` as the primary reference for the C++ engine port.
-- **Shared Database:** Ported `RPGDatabase.h` to `src/Engine/shared/database/`, utilizing `std::shared_ptr` and mirroring the Java structure.
-- **UI Panels:** Created `EditorsPanel` and `GameEditorPanel` skeletons in C++ and wired them into the `StuffMenu` system.
-- **Documentation:** Initialized `VISION.md`, `MEMORY.md`, and `DEPLOY.md` to track engine porting progress and architectural decisions.
-- **ECS Improvement:** Enhanced `VisualScriptSystem.h` with recursive block processing and variable-handling placeholders.
+- **Java Engine Core Port:** Ported the central `RPGDatabase` and `GameDataLoader` from Java to C++ with 1:1 data parity.
+- **ECS Visual Scripting:** Implemented a data-driven ECS system (`VisualScriptSystem`) supporting hierarchical event sheets, conditions, and actions mirroring the LibGDX implementation.
+- **Unified Editor UI:** Integrated `RPGEditorControl` and refined `CustomGameEditorControl` within the GWEN-based `StuffMenu`, enabling native editing of Actor, Item, and Puzzle data.
+- **Asset Pipeline:** Added support for Base64-encoded, Zlib-compressed asset parsing in `GameDataLoader` using `FileUtils` and `miniz`.
 
 ### Changed
 - Bumped version to `2.0.28`.
-- Updated `IDEAS.md` to include automated memory management refactoring plans.
-
-
-## [2.0.28] - 2026-04-06
-
-### Added
-- **Consolidated Single-Page Dashboard (`docs/DASHBOARD.md`):** Completely redesigned the engine dashboard into a unified, high-value operations hub grouping Gameplay/Editor, Audio/Visualization, Emulation/Libretro, Online/Steam, and System Tray Lifecycle.
-- **Guidance Tooltips & Controls Documentation:** Documented interactive tooltips and contextual markers for complex puzzle tuning parameters and Libretro options.
-- **Core Governance Documentation:** Created `VISION.md`, `TODO.md`, `DEPLOY.md`, and `MEMORY.md` following universal governance standards.
-- **System Tray Lifecycle Specification:** Added tray actions for show/hide window, audio mute/unmute, quicksave, and graceful server/process quit.
-- **Performance & Frame Sync Telemetry:** Documented profiling insights into VSync vs. decoupled high-frequency frame sync loops.
-
-### Changed
-- Bumped project version to `2.0.28`.
-- Updated `ROADMAP.md` and `IDEAS.md` to reflect dashboard consolidation, Steam polish, and frame profiling.
-
+- Modernized `EightDirectionBehavior` to use unified C++ `ControlsManager` state.
 
 ## [2.0.27] - 2026-04-06
 

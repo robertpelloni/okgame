@@ -4,12 +4,13 @@
 **Current Version:** 2.0.28
 
 ## In Progress
-*   [x] **Steam Integration Polish (2.0.28)** (Linked real Steamworks SDK binaries win64/linux64 and verified dynamic AppID)
-*   [ ] **Performance Profiling** (Profile and optimize high-frequency frame sync and decoupled rendering loops in `Main::whilefix()`)
-*   [ ] **System Tray Integration** (Wire SDL3 `SDL_CreateTray` for background execution, mute toggle, and server shutdown)
+*   [ ] **Steam Integration Polish** (Replace C++ SDK stubs with real Steamworks binaries)
+*   [ ] **Performance Profiling** (Identify bottlenecks in high-frequency frame sync)
+*   [ ] **Combat Engine Parity** (Port Java battle logic to C++ ECS)
 
 ## Completed Features
-*   [x] **Consolidated Engine Dashboard (2.0.28)** (Unified single-page dashboard with priority categorization, tooltips, and tray lifecycle) - *Completed April 2026*
+*   [x] **Java Engine Core Port (2.0.28)** (RPGDatabase, ECS VisualScripting, GameDataLoader asset parity)
+*   [x] **Unified Editor UI (2.0.28)** (Gwen-based RPG and Custom Game editors for native parity)
 *   [x] **Unified Release (2.0.0)** (Finalized cross-platform parity and synchronization) - *Completed March 18, 2026*
 *   [x] **Visualizer Shaders (1.7.0)** (Modernize projectM shaders for SDL3 compatibility)
 *   [x] **C++ Matchmaking UI (1.6.0)** (`LobbyMenuPanel` and `GameSelectorMenuPanel`)

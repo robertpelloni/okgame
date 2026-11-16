@@ -1,57 +1,20 @@
-# TODO
-- [ ] Steam Integration Polish (Replace C++ SDK stubs with real Steamworks binaries)
-- [ ] Performance Profiling (Identify bottlenecks in high-frequency frame sync)
-- [ ] Implement Tournament mode orchestration.
-- [ ] Expanded Visualizer Gallery.
-- [ ] Advanced Lua scripting hooks.
-- [ ] Hook `saveAllToCurrentGameType()` into the actual save/upload flow.
-- [x] Add a miniature live preview piece renderer next to the grid. (Completed)
-- [x] Consider confirmation prompts for delete actions if native editor UX testing shows accidental removals. (Completed)
+# TODO: okgame (C++)
 
-# TODO: Granular Roadmap & Active Tasks
+## Immediate Tasks
+- [x] **Port RPGDatabase:** Port `com.bobsgame.shared.database.RPGDatabase` from Java to `src/Engine/shared/database/RPGDatabase.h`.
+- [x] **Port EditorsPanel:** Implement `EditorsPanel` in C++ Gwen UI to match Java.
+- [x] **Port GameEditorPanel:** Implement `GameEditorPanel` in C++ Gwen UI to match Java.
+- [x] **Enhance VisualScriptSystem:** Expand condition/action handling in `VisualScriptSystem.h`.
+- [x] **Smart Pointer Audit:** Ensure all new RPG engine components use `std::shared_ptr`.
+- [ ] **Implement Asset Registry:** Wire `RPGDatabase` to the `GameDataLoader` for automated object instantiation.
+- [ ] **Combat System Port:** Port the turn-based combat logic from Java to the C++ ECS.
 
-## 1. High Priority: UI & Dashboard Consolidation
-- [ ] **Consolidated Single-Page Dashboard:** Merge disparate settings panels and menu panels into a cohesive, tabbed/scrollable dashboard interface (`docs/DASHBOARD.md` / `StuffMenu`).
-- [ ] **Interactive Tooltips & Visual Cues:** Add contextual hover descriptions and guidance markers for complex puzzle tuning parameters (randomizer bag types, lock delay, wall kick rules).
-- [ ] **System Tray Integration:** Implement system tray icon (`SDL_CreateTray` in SDL3 or platform fallback) with quick actions:
-  - [ ] Show/Hide Game Window.
-  - [ ] Mute/Unmute Audio.
-  - [ ] Quicksave / Save State.
-  - [ ] Safe Quit Application & Kill Background Network Workers.
-- [ ] **Live Telemetry & Diagnostics:** Connect in-engine `DebugInfoPanel` and `LogsPanel` to real-time performance graphs (FPS, frame time, draw calls, PCM visualizer buffer status).
+## Bug Fixes
+- [ ] Resolve memory leaks in legacy RPG engine components during map transitions.
+- [ ] Fix potential race conditions in `NetworkManager` JSON parsing.
+- [ ] Verify `miniz` behavior with large Base64-encoded map chunks.
 
----
-
-## 2. Puzzle & Custom Editor Parity
-- [ ] **Preview Viewport in Custom Game Editor:** Render an interactive real-time piece preview canvas adjacent to the 4x4 matrix grid in `CustomGameEditorControl`.
-- [ ] **Import/Export Ruleset Serialization:** Wire JSON import and export for custom puzzle rulesets (`GameType`) to match web and Java formats.
-- [ ] **Palette & Block Theme Authoring:** Expand editor to allow custom RGBA color sets, animation speed parameters, and special block triggers (bombs, wildcards, garbage converters).
-- [ ] **Action Confirmation Modals:** Add confirmation dialogues on piece/rotation deletion to prevent accidental user data loss.
-
----
-
-## 3. Network & Multiplayer
-- [ ] **WebSocket Reconnection Resiliency:** Add exponential backoff reconnection logic in Poco network client on unexpected socket disconnects.
-- [ ] **Matchmaking Lobby Polish:** Wire ping indicators, spectator slot toggling, and room password protection directly into `LobbyMenuPanel`.
-- [ ] **Leaderboard Caching:** Persist recent online leaderboard query results locally to reduce network traffic on reconnects.
-
----
-
-## 4. Libretro & Emulation Frontend
-- [ ] **Core Downloader / Manager:** Add in-menu manifest fetching to automate downloading approved Libretro core binaries.
-- [ ] **Shaders Submenu:** Expand CRT scanline options with customizable bloom, curvature, and phosphor mask toggles.
-- [ ] **Audio Resampler Polish:** Implement dynamic sinc/cubic audio resampling in the ring buffer to eliminate audio crackle on slight timing discrepancies.
-
----
-
-## 5. Bobcoin & Economy Integration
-- [ ] **BobcoinManager Subsystem:** Connect `lib/bobcoin` client routines in `src/Engine/network/BobcoinManager.cpp`.
-- [ ] **Wallet Dashboard UI:** Display current wallet balance, public address QR code, transaction history, and network synchronization status.
-- [ ] **Proof-of-Play Mining Worker:** Implement background puzzle-reward computation thread with configurable CPU throttling.
-
----
-
-## 6. Build & Infrastructure
-- [ ] **Linux Launch Script Hardening:** Implement dependency autodetection and library rpath setup in `linux/bobsgame.sh` and `linux/prepare_for_launch.sh`.
-- [ ] **Headless CI Verification Script:** Add a test script to validate compilation and verify headers without requiring an interactive X11/Wayland display.
-
+## Polish
+- [x] Sync `CustomGameEditor` with the latest Java/Web preset summary UX.
+- [ ] Modernize RPG engine render calls to use SDL3 vertex arrays.
+- [ ] Implement tooltips for all `RPGEditorControl` fields.
