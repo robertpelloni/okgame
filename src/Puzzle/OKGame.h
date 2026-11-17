@@ -36,6 +36,7 @@ class Logger;
 // implements against them. Alias so both spellings name the same types.
 using OKGameUserStatsForSpecificGameAndDifficulty = BobsGameUserStatsForSpecificGameAndDifficulty;
 using OKGameLeaderBoardAndHighScoreBoard = BobsGameLeaderBoardAndHighScoreBoard;
+using OKGameLeaderBoardAndHighScoreBoardEntry = BobsGameLeaderBoardAndHighScoreBoard::BobsGameLeaderBoardAndHighScoreBoardEntry;
 //#include "GameTestMenu.h"
 
 class OKGameGameStats;
@@ -145,6 +146,10 @@ public:
 	virtual bool updateMenus() override;
 
 	bool startScreenMenuShowing = false;
+	// OKGame menus are OKMenu-typed; these hide MiniGameEngine's BobMenu
+	// titleMenu/pauseMenu for OKGame's own menu code.
+	sp<OKMenu>titleMenu = nullptr;
+	sp<OKMenu>pauseMenu = nullptr;
 	sp<OKMenu>startScreenMenu = nullptr;
 	sp<OKMenu>infoMenu = nullptr;
 	sp<OKMenu>patreonMenu = nullptr;

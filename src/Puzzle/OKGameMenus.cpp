@@ -1,10 +1,23 @@
 #include "stdafx.h"
 
 #include "src/Utility/audio/AudioManager.h"
+#include "src/Engine/network/OKNet.h"
 
 #include "stdlib.h"
 
 #include "Room.h"
+
+// GLUtils loads BobTexture; OKGame menus store OKTexture (identical fork).
+static sp<OKTexture> toOKTexture(const sp<BobTexture>& t)
+{
+	if (t == nullptr) return nullptr;
+	sp<OKTexture> o = ms<OKTexture>(t->cacheName, t->getTextureID());
+	o->setImageWidth(t->getImageWidth());
+	o->setImageHeight(t->getImageHeight());
+	o->setTextureWidth(t->getTextureWidth());
+	o->setTextureHeight(t->getTextureHeight());
+	return o;
+}
 
 
 //=========================================================================================================================
@@ -376,7 +389,7 @@ void OKGame::titleMenuUpdate()
 
 	if (titleMenu == nullptr)
 	{
-		titleMenu = ms<OKMenu>(this, "");
+		titleMenu = ms<OKMenu>(shared_from_this(), "");
 		titleMenu->spacing = 1.2f;
 
 		titleMenu->addInfo("Connecting to server...","Login");
@@ -474,9 +487,9 @@ void OKGame::titleMenuRender()
 
 	if (
 		//titleMenuTextures != nullptr && 
-		titleMenuTextures->size()>0)t = titleMenuTextures->at(currentTitleMenuTextureFrame);
+		titleMenuTextures->size()>0)t = toOKTexture(titleMenuTextures->at(currentTitleMenuTextureFrame));
 
-	if (titleMenuTexture != nullptr)t = titleMenuTexture;
+	if (titleMenuTexture != nullptr)t = toOKTexture(titleMenuTexture);
 
 	if (titleMenu == nullptr)return;
 
@@ -495,7 +508,7 @@ void OKGame::startScreenMenuUpdate()
 
 	if (startScreenMenu == nullptr)
 	{
-		startScreenMenu = ms<OKMenu>(this, "");
+		startScreenMenu = ms<OKMenu>(shared_from_this(), "");
 		startScreenMenu->spacing = 1.2f;
 		startScreenMenu->setFontSize(32);
 
@@ -524,7 +537,7 @@ void OKGame::startScreenMenuUpdate()
 
 	if (infoMenu == nullptr)
 	{
-		infoMenu = ms<OKMenu>(this, "");
+		infoMenu = ms<OKMenu>(shared_from_this(), "");
 		infoMenu->center = false;
 		infoMenu->setFontSize(10);
 		infoMenu->outline = false;
@@ -538,7 +551,7 @@ void OKGame::startScreenMenuUpdate()
 
 //	if (patreonMenu == nullptr)
 //	{
-//		patreonMenu = ms<OKMenu>(this, "");
+//		patreonMenu = ms<OKMenu>(shared_from_this(), "");
 //		patreonMenu->center = false;
 //		patreonMenu->font = 10;
 //		patreonMenu->outline = false;
@@ -548,7 +561,7 @@ void OKGame::startScreenMenuUpdate()
 
 	if (forumMenu == nullptr)
 	{
-		forumMenu = ms<OKMenu>(this, "");
+		forumMenu = ms<OKMenu>(shared_from_this(), "");
 		forumMenu->center = false;
 		forumMenu->setFontSize(10);
 		forumMenu->outline = false;
@@ -579,7 +592,7 @@ void OKGame::startScreenMenuUpdate()
 							
 		if (activityMenu == nullptr)
 		{
-			activityMenu = ms<OKMenu>(this, "", "Activity Stream");
+			activityMenu = ms<OKMenu>(shared_from_this(), "", "Activity Stream");
 			activityMenu->spacing = 1.2f;
 			activityMenu->setFontSize(14);
 			activityMenu->center = false;
@@ -745,8 +758,8 @@ void OKGame::startScreenMenuRender()
 
 	if (
 		//titleMenuTextures != nullptr && 
-		titleMenuTextures->size()>0)t = titleMenuTextures->at(currentTitleMenuTextureFrame);
-	if (titleMenuTexture != nullptr)t = titleMenuTexture;
+		titleMenuTextures->size()>0)t = toOKTexture(titleMenuTextures->at(currentTitleMenuTextureFrame));
+	if (titleMenuTexture != nullptr)t = toOKTexture(titleMenuTexture);
 
 	if (startScreenMenu == nullptr)return;
 
@@ -794,7 +807,7 @@ void OKGame::gettingGamesFromServerMenuUpdate()
 
 	if (gettingGamesFromServerMenu == nullptr)
 	{
-		gettingGamesFromServerMenu = ms<OKMenu>(this, "");
+		gettingGamesFromServerMenu = ms<OKMenu>(shared_from_this(), "");
 		gettingGamesFromServerMenu->spacing = 1.2f;
 		gettingGamesFromServerMenu->setFontSize(24);
 		gettingGamesFromServerMenu->addInfo("Downloading games from server...","Downloading");
@@ -822,8 +835,8 @@ void OKGame::gettingGamesFromServerMenuRender()
 
 	if (
 		//titleMenuTextures != nullptr && 
-		titleMenuTextures->size()>0)t = titleMenuTextures->at(currentTitleMenuTextureFrame);
-	if (titleMenuTexture != nullptr)t = titleMenuTexture;
+		titleMenuTextures->size()>0)t = toOKTexture(titleMenuTextures->at(currentTitleMenuTextureFrame));
+	if (titleMenuTexture != nullptr)t = toOKTexture(titleMenuTexture);
 
 	if (gettingGamesFromServerMenu == nullptr)return;
 
@@ -855,7 +868,7 @@ void OKGame::pauseMenuUpdate()
 
 	if(pauseMenu == nullptr)
 	{
-		pauseMenu = ms<OKMenu>(this,"Paused");
+		pauseMenu = ms<OKMenu>(shared_from_this(),"Paused");
 
 		pauseMenu->add("Back To Game", "Back To Game");
 		settingsMenuInit(pauseMenu, false);
@@ -991,7 +1004,7 @@ void OKGame::controllerMenuUpdate()
 		//Testing... Press Esc to stop.
 		//Create custom mapping
 
-		controllerMenu = ms<OKMenu>(this, "Controller Test");
+		controllerMenu = ms<OKMenu>(shared_from_this(), "Controller Test");
 		controllerMenu->addInfo("Game controllers should be automatically detected.");
 #ifdef _WINDOWS_
 		controllerMenu->addInfo("If your controller does not work, try downloading x360ce.");
@@ -1029,7 +1042,7 @@ void OKGame::controllerMenuUpdate()
 
 		for (int i = 0; i < getControlsManager()->gameControllers->size(); i++)
 		{
-			sp<GameController>g = getControlsManager()->gameControllers->at(i);
+			sp<GameController> g = borrowed<GameController>(getControlsManager()->gameControllers->at(i));
 
 			m->setColor(OKColor::lightRed);
 
@@ -1269,52 +1282,52 @@ void OKGame::playerPauseMiniMenuUpdate(sp<PuzzlePlayer>p)
 
 	if (p != nullptr)
 	{
-		if (p->menu == nullptr)
+		if (p->okMenu == nullptr)
 		{
-			p->menu = ms<OKMenu>(this, "");
+			p->okMenu = ms<OKMenu>(shared_from_this(), "");
 
-			p->menu->add("Back To Game", "Back To Game", OKColor::white);
-			settingsMenuInit(p->menu, false);
+			p->okMenu->add("Back To Game", "Back To Game" , OKColor::white);
+			settingsMenuInit(p->okMenu, false);
 
-			playerSettingsMenuInit(p->menu, p);
+			playerSettingsMenuInit(p->okMenu, p);
 
 
-			playerControllerSettingsMenuInit(p->menu, p);
+			playerControllerSettingsMenuInit(p->okMenu, p);
 
-			p->menu->addInfo(" ");
-			p->menu->add("Forfeit", "Forfeit", OKColor::white);
+			p->okMenu->addInfo(" ");
+			p->okMenu->add("Forfeit", "Forfeit" , OKColor::white);
 		}
 
 		if (p->upPressed())
 		{
-			p->menu->up();
+			p->okMenu->up();
 		}
 
 		if (p->downPressed())
 		{
-			p->menu->down();
+			p->okMenu->down();
 		}
 
 		if (p->LEFT_HELD)
 		{
-			settingsMenuLeft(p->menu);
-			playerSettingsMenuLeft(p->menu,p);
+			settingsMenuLeft(p->okMenu);
+			playerSettingsMenuLeft(p->okMenu,p);
 		}
 		if (p->RIGHT_HELD)
 		{
-			settingsMenuRight(p->menu);
-			playerSettingsMenuRight(p->menu, p);
+			settingsMenuRight(p->okMenu);
+			playerSettingsMenuRight(p->okMenu, p);
 		}
 
 		if (p->leftPressed())
 		{
-			settingsMenuToggle(p->menu);
-			playerControllerSettingsMenuToggle(p->menu, p);
+			settingsMenuToggle(p->okMenu);
+			playerControllerSettingsMenuToggle(p->okMenu, p);
 		}
 		if (p->rightPressed())
 		{
-			settingsMenuToggle(p->menu);
-			playerControllerSettingsMenuToggle(p->menu, p);
+			settingsMenuToggle(p->okMenu);
+			playerControllerSettingsMenuToggle(p->okMenu, p);
 		}
 
 		bool leaveMenu = false;
@@ -1323,26 +1336,26 @@ void OKGame::playerPauseMiniMenuUpdate(sp<PuzzlePlayer>p)
 		if (p->confirmPressed())
 		{
 
-			settingsMenuToggle(p->menu);
-			playerControllerSettingsMenuToggle(p->menu, p);
+			settingsMenuToggle(p->okMenu);
+			playerControllerSettingsMenuToggle(p->okMenu, p);
 
 
-			if (p->menu->isSelectedID("Defaults"))
+			if (p->okMenu->isSelectedID("Defaults"))
 			{
-				settingsMenuSetDefaults(p->menu, false);
+				settingsMenuSetDefaults(p->okMenu, false);
 
 				p->hue = 1.0f;
-				p->menu->getMenuItemByID("Player Hue Shift")->setText("Player Hue Shift: " + to_string((int)(p->hue * 100)) + "%");
+				p->okMenu->getMenuItemByID("Player Hue Shift")->setText("Player Hue Shift: " + to_string((int)(p->hue * 100)) + "%");
 
 
 			}
 
-			if (p->menu->isSelectedID("Back To Game"))
+			if (p->okMenu->isSelectedID("Back To Game"))
 			{
 				leaveMenu = true;
 			}
 
-			if (p->menu->isSelectedID("Forfeit"))
+			if (p->okMenu->isSelectedID("Forfeit"))
 			{
 				//if (isMultiplayer())
 				{
@@ -1399,10 +1412,10 @@ void OKGame::playerPauseMiniMenuUpdate(sp<PuzzlePlayer>p)
 
 		if (leaveMenu)
 		{
-			if (p->menu != nullptr)
+			if (p->okMenu != nullptr)
 			{
-				//delete p->menu;
-				p->menu = nullptr;
+				//delete p->okMenu;
+				p->okMenu = nullptr;
 			}
 			p->gameLogic->pauseMiniMenuShowing = false;
 
@@ -1423,9 +1436,9 @@ void OKGame::playerPauseMiniMenuRender(sp<PuzzlePlayer>p, float x0, float x1, fl
 
 	//GLUtils::drawFilledRect(255,255,255, x0,x1,y0,y1, 0.7f);
 
-	if (p->menu != nullptr)
+	if (p->okMenu != nullptr)
 	{
-		p->menu->render((int)(y0+((y1-y0)/2)), (int)(x0 + ((x1 - x0) / 2)),getHeight(),true,nullptr,nullptr,true);
+		p->okMenu->render((int)(y0+((y1-y0)/2)), (int)(x0 + ((x1 - x0) / 2)),getHeight(),true,nullptr,nullptr,true);
 	}
 }
 
@@ -1439,12 +1452,12 @@ void OKGame::loginMenuUpdate()
 
 	int y = (int)(getHeight() / 4 * 3);
 
-	if (statusLabel == nullptr)statusLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, y, -1, " ", 16, true, OKMenu::statusColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
-	if (errorLabel == nullptr)errorLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, y, -1, " ", 16, true, OKMenu::errorColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
+	if (statusLabel == nullptr)statusLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, y, -1, " ", 16, true, BobMenu::statusColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
+	if (errorLabel == nullptr)errorLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, y, -1, " ", 16, true, BobMenu::errorColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 
 	if (loginMenu == nullptr)
 	{
-		loginMenu = ms<OKMenu>(this, "Login");
+		loginMenu = ms<OKMenu>(shared_from_this(), "Login");
 		//loginMenu->center = false;
 		loginMenu->add("Username or Email: " + userNameOrEmailText,"Username or Email", OKMenu::statusColor);
 		loginMenu->add("Password: " + passwordStarsText, "Password", OKMenu::statusColor);
@@ -1528,7 +1541,7 @@ void OKGame::loginMenuUpdate()
 		if (loginMenu->isSelectedID("Log in", clicked, mx, my) || loginMenu->isSelectedID("Password", clicked, mx, my))
 		{
 
-			getServerConnection()->doLogin(statusLabel, errorLabel, userNameOrEmailText, passwordText, stayLoggedIn);
+			getServerConnection()->doLogin(statusLabel.get(), errorLabel.get(), userNameOrEmailText, passwordText, stayLoggedIn);
 
 			passwordText = "";
 			
@@ -1542,7 +1555,7 @@ void OKGame::loginMenuUpdate()
 
 		if (loginMenu->isSelectedID("Forgot password", clicked, mx, my))
 		{
-			getServerConnection()->doForgotPassword(statusLabel,errorLabel,userNameOrEmailText);
+			getServerConnection()->doForgotPassword(statusLabel.get(),errorLabel.get(),userNameOrEmailText);
 		}
 
 		if (loginMenu->isSelectedID("Return to title screen", clicked, mx, my))
@@ -1632,8 +1645,8 @@ void OKGame::createAccountMenuUpdate()
 	{
 		int y = (int)(getHeight() / 4 * 3);
 
-		if (statusLabel == nullptr)statusLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, y, -1, " ", 16, true, OKMenu::statusColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
-		if (errorLabel == nullptr)errorLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, y, -1, " ", 16, true, OKMenu::errorColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
+		if (statusLabel == nullptr)statusLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, y, -1, " ", 16, true, BobMenu::statusColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
+		if (errorLabel == nullptr)errorLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, y, -1, " ", 16, true, BobMenu::errorColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 
 		if (userNameOrEmailText.length()>0)
 		{
@@ -1643,7 +1656,7 @@ void OKGame::createAccountMenuUpdate()
 				userNameText = userNameOrEmailText;
 		}
 
-		createAccountMenu = ms<OKMenu>(this, "Create Account");
+		createAccountMenu = ms<OKMenu>(shared_from_this(), "Create Account");
 		//createAccountMenu->center = false;
 		createAccountMenu->add("Username: " + userNameText, "Username");
 		createAccountMenu->add("Email: " + emailText, "Email");
@@ -1724,12 +1737,12 @@ void OKGame::createAccountMenuUpdate()
 	{
 		if (createAccountMenu->isSelectedID("Create account", clicked, mx, my))
 		{
-			if(getServerConnection()->doCreateAccount(statusLabel,errorLabel,userNameText,emailText,passwordText,confirmPasswordText)==true)
+			if(getServerConnection()->doCreateAccount(statusLabel.get(),errorLabel.get(),userNameText,emailText,passwordText,confirmPasswordText)==true)
 			{
 				
 				Main::delay(2000);
 
-				if(getServerConnection()->doLogin(statusLabel, errorLabel, userNameText, passwordText, true)==true)
+				if(getServerConnection()->doLogin(statusLabel.get(), errorLabel.get(), userNameText, passwordText, true)==true)
 				{
 					startScreenMenuShowing = true;
 					passwordText = "";
@@ -2151,7 +2164,7 @@ void OKGame::globalSettingsMenuUpdate()
 
 	if (globalSettingsMenu == nullptr)
 	{
-		globalSettingsMenu = ms<OKMenu>(this, "Global Settings");
+		globalSettingsMenu = ms<OKMenu>(shared_from_this(), "Global Settings");
 
 		settingsMenuInit(globalSettingsMenu, true);
 		globalSettingsMenu->add("Back To Title Screen", "Back To Title Screen");
@@ -2263,7 +2276,7 @@ void OKGame::whichStatsMiniMenuUpdate()
 	//populate leaderBoardMiniMenu
 	if (whichStatsMiniMenu == nullptr)
 	{
-		whichStatsMiniMenu = ms<OKMenu>(this, "");
+		whichStatsMiniMenu = ms<OKMenu>(shared_from_this(), "");
 		whichStatsMiniMenu->center = false;
 		whichStatsMiniMenu->setFontSize(12);
 
@@ -2355,7 +2368,7 @@ void OKGame::statsMenuUpdate()
 
 	if (statsMenu == nullptr)
 	{
-		statsMenu = ms<OKMenu>(this, "Stats And Leaderboards");
+		statsMenu = ms<OKMenu>(shared_from_this(), "Stats And Leaderboards");
 		statsMenu->center = false;
 
 		statsMenu->add("Leaderboard Type: ", "Stats Type");
@@ -2543,7 +2556,7 @@ void OKGame::statsMenuUpdate()
 
 	if (yourStatsMenu == nullptr)
 	{
-		yourStatsMenu = ms<OKMenu>(this, "", "Your Stats");
+		yourStatsMenu = ms<OKMenu>(shared_from_this(), "", "Your Stats");
 		yourStatsMenu->center = false;
 		yourStatsMenu->setFontSize(14);
 		yourStatsMenu->outline = false;
@@ -2557,7 +2570,7 @@ void OKGame::statsMenuUpdate()
 
 	if (leaderBoardMenu == nullptr)
 	{
-		leaderBoardMenu = ms<OKMenu>(this, "", "High Scores");
+		leaderBoardMenu = ms<OKMenu>(shared_from_this(), "", "High Scores");
 		leaderBoardMenu->center = false;
 		leaderBoardMenu->setFontSize(14);
 		leaderBoardMenu->outline = false;
@@ -2747,7 +2760,7 @@ void OKGame::saveRoomConfigMenuUpdate()
 	{
 		chatEnabled = false;
 
-		saveRoomConfigMenu = ms<OKMenu>(this, "");
+		saveRoomConfigMenu = ms<OKMenu>(shared_from_this(), "");
 		saveRoomConfigMenu->center = false;
 		//saveRoomConfigMenu->outline = false;
 
@@ -2860,7 +2873,7 @@ void OKGame::loadRoomConfigMenuUpdate()
 
 	if (loadRoomConfigMenu == nullptr)
 	{
-		loadRoomConfigMenu = ms<OKMenu>(this, "");
+		loadRoomConfigMenu = ms<OKMenu>(shared_from_this(), "");
 		loadRoomConfigMenu->center = false;
 		//loadRoomConfigMenu->outline = false;
 
@@ -2941,7 +2954,7 @@ void OKGame::gameObjectiveMenuUpdate()
 	const string ENDLESS = "Endless Mode";
 	if (gameObjectiveMenu == nullptr)
 	{
-		gameObjectiveMenu = ms<OKMenu>(this, "");
+		gameObjectiveMenu = ms<OKMenu>(shared_from_this(), "");
 		//gameObjectiveMenu->outline = false;
 
 		gameObjectiveMenu->add(PLAY_TO_CREDITS_LEVEL);
@@ -3003,7 +3016,7 @@ void OKGame::sendGarbageToMenuUpdate()
 
 	if (sendGarbageToMenu == nullptr)
 	{
-		sendGarbageToMenu = ms<OKMenu>(this, "");
+		sendGarbageToMenu = ms<OKMenu>(shared_from_this(), "");
 		//sendGarbageToMenu->outline = false;
 
 
@@ -3159,8 +3172,8 @@ void OKGame::roomOptionsMenuUpdate()
 			//delete descriptionCaption; 
 			descriptionCaption = nullptr; 
 		}
-		descriptionCaption = ms<Caption>(this, Caption::Position::CENTERED_X, 0, 0, -1, "", 18, false, OKColor::darkGray, OKColor::clear);
-		roomOptionsMenu = ms<OKMenu>(this, "");
+		descriptionCaption = ms<Caption>(this, Caption::Position::CENTERED_X, 0, 0, -1, "", 18, false, BobColor::darkGray, BobColor::clear);
+		roomOptionsMenu = ms<OKMenu>(shared_from_this(), "");
 		roomOptionsMenu->center = false;
 		roomOptionsMenu->setFontSize(24);
 		//roomOptionsMenu->outline = false;
@@ -3630,9 +3643,9 @@ void OKGame::gameSetupMenuUpdate()
 	if (gameSetupMenu == nullptr)
 	{
 
-		errorLabel = ms<Caption>(this, Caption::Position::CENTERED_X, 0, 0, -1, "", 16, false, OKColor::red, OKColor::clear);
+		errorLabel = ms<Caption>(this, Caption::Position::CENTERED_X, 0, 0, -1, "", 16, false, BobColor::red, BobColor::clear);
 
-		gameSetupMenu = ms<OKMenu>(this, "Setup Game Options");
+		gameSetupMenu = ms<OKMenu>(shared_from_this(), "Setup Game Options");
 		gameSetupMenu->center = false;
 
 		gameSetupMenu->add("Start Game", "Start Game", OKColor::green);
@@ -3791,7 +3804,7 @@ void OKGame::gameSetupMenuUpdate()
 
 	if (yourStatsMenu == nullptr)
 	{
-		yourStatsMenu = ms<OKMenu>(this, "", "Your Stats");
+		yourStatsMenu = ms<OKMenu>(shared_from_this(), "", "Your Stats");
 		yourStatsMenu->center = false;
 		yourStatsMenu->setFontSize(14);
 		yourStatsMenu->outline = false;
@@ -3805,7 +3818,7 @@ void OKGame::gameSetupMenuUpdate()
 
 	if (leaderBoardMenu == nullptr)
 	{
-		leaderBoardMenu = ms<OKMenu>(this, "", "High Scores");
+		leaderBoardMenu = ms<OKMenu>(shared_from_this(), "", "High Scores");
 		leaderBoardMenu->center = false;
 		leaderBoardMenu->setFontSize(14);
 		leaderBoardMenu->outline = false;
@@ -3942,17 +3955,17 @@ void OKGame::gameSetupMenuUpdate()
 		//assign controller to p1 if start or b pressed
 		for (int i = 0; i < getControlsManager()->gameControllers->size(); i++)
 		{
-			sp<GameController>g = getControlsManager()->gameControllers->at(i);
+			sp<GameController> g = borrowed<GameController>(getControlsManager()->gameControllers->at(i));
 			if (g->b_Pressed())
 			{
 				confirm = true;
-				getPlayer1()->gameController = g;
+				getPlayer1()->gameController = g.get();
 				getPlayer1()->rotateCWPressed();//cancel this
 			}
 			if (g->start_Pressed())
 			{
 				confirm = true;
-				getPlayer1()->gameController = g;
+				getPlayer1()->gameController = g.get();
 				getPlayer1()->pausePressed();//cancel this so it doesn't pause immediately
 			}
 		}
@@ -4261,7 +4274,7 @@ void OKGame::selectGameSequenceOrSingleGameTypeMenuUpdate()
 
 	if (selectGameSequenceOrSingleGameTypeMenu == nullptr)
 	{
-		selectGameSequenceOrSingleGameTypeMenu = ms<OKMenu>(this, "");
+		selectGameSequenceOrSingleGameTypeMenu = ms<OKMenu>(shared_from_this(), "");
 
 		if(localMultiplayer || networkMultiplayer)
 		{
@@ -4391,7 +4404,7 @@ void OKGame::selectGameSequenceMenuUpdate()
 
 	if (selectGameSequenceMenu == nullptr)
 	{
-		selectGameSequenceMenu = ms<OKMenu>(this, "");
+		selectGameSequenceMenu = ms<OKMenu>(shared_from_this(), "");
 		selectGameSequenceMenu->center = false;
 		selectGameSequenceMenu->outline = false;
 
@@ -4490,7 +4503,7 @@ void OKGame::gameSequenceOptionsMenuUpdate()
 
 	if (gameSequenceOptionsMenu == nullptr)
 	{
-		gameSequenceOptionsMenu = ms<OKMenu>(this,"");
+		gameSequenceOptionsMenu = ms<OKMenu>(shared_from_this(),"");
 
 		gameSequenceOptionsMenu->add(RANDOMIZE_SEQUENCE);
 		gameSequenceOptionsMenu->add(PLAY_THROUGH_SEQUENCE_IN_ORDER);
@@ -5017,14 +5030,14 @@ sp<OKGameLeaderBoardAndHighScoreBoard> OKGame::getLeaderboardOrHighScoreBoardFor
 
 	sp<OKGameLeaderBoardAndHighScoreBoard>stats = nullptr;
 
-	sp<vector<sp<OKGameLeaderBoardAndHighScoreBoard>>>board = ms<vector<sp<OKGameLeaderBoardAndHighScoreBoard>>>(topPlayersByTotalTimePlayed);
+	sp<vector<sp<OKGameLeaderBoardAndHighScoreBoard>>> board = topPlayersByTotalTimePlayed;
 
-	if (totalTimePlayed)board = ms<vector<sp<OKGameLeaderBoardAndHighScoreBoard>>>(topPlayersByTotalTimePlayed);
-	if (totalBlocksCleared)board = ms<vector<sp<OKGameLeaderBoardAndHighScoreBoard>>>(topPlayersByTotalBlocksCleared);
-	if (planeswalkerPoints)board = ms<vector<sp<OKGameLeaderBoardAndHighScoreBoard>>>(topPlayersByPlaneswalkerPoints);
-	if (eloScore)board = ms<vector<sp<OKGameLeaderBoardAndHighScoreBoard>>>(topPlayersByEloScore);
-	if (timeLasted)board = ms<vector<sp<OKGameLeaderBoardAndHighScoreBoard>>>(topGamesByTimeLasted);
-	if (blocksCleared)board = ms<vector<sp<OKGameLeaderBoardAndHighScoreBoard>>>(topGamesByBlocksCleared);
+	if (totalTimePlayed)board = topPlayersByTotalTimePlayed;
+	if (totalBlocksCleared)board = topPlayersByTotalBlocksCleared;
+	if (planeswalkerPoints)board = topPlayersByPlaneswalkerPoints;
+	if (eloScore)board = topPlayersByEloScore;
+	if (timeLasted)board = topGamesByTimeLasted;
+	if (blocksCleared)board = topGamesByBlocksCleared;
 
 	for (int i = 0; i<board->size(); i++)
 	{
@@ -5141,7 +5154,7 @@ string OKGame::populateLeaderBoardOrHighScoreBoardMenu(sp<OKMenu>menu, string ga
 	for (int i = 0; i < stats->entries->size(); i++)
 	{
 
-		sp<OKGameLeaderBoardAndHighScoreBoard::OKGameLeaderBoardAndHighScoreBoardEntry> e = stats->entries->at(i);
+						sp<OKGameLeaderBoardAndHighScoreBoardEntry> e = borrowed<OKGameLeaderBoardAndHighScoreBoardEntry>(stats->entries->at(i));
 
 		if (e->userName == "") { continue; }
 
@@ -5223,7 +5236,7 @@ void OKGame::selectSingleGameTypeMenuUpdate()
 
 	if (selectSingleGameTypeMenu == nullptr)
 	{
-		selectSingleGameTypeMenu = ms<OKMenu>(this, "");
+		selectSingleGameTypeMenu = ms<OKMenu>(shared_from_this(), "");
 		selectSingleGameTypeMenu->center = false;
 		selectSingleGameTypeMenu->setFontSize(14);
 		selectSingleGameTypeMenu->outline = false;
@@ -5388,7 +5401,7 @@ void OKGame::difficultyMenuUpdate()
 
 	if (difficultyMenu == nullptr)
 	{
-		difficultyMenu = ms<OKMenu>(this, "");
+		difficultyMenu = ms<OKMenu>(shared_from_this(), "");
 		difficultyMenu->center = false;
 
 		if (localMultiplayer || networkMultiplayer)
@@ -5527,12 +5540,12 @@ void OKGame::multiplayerOptionsMenuUpdate()
 
 		if(networkMultiplayer)
 		{
-			multiplayerOptionsMenu = ms<OKMenu>(this, "Set Network Multiplayer Room Options");
+			multiplayerOptionsMenu = ms<OKMenu>(shared_from_this(), "Set Network Multiplayer Room Options");
 			//multiplayerOptionsMenu->center = false;
 		}
 		else
 		{
-			multiplayerOptionsMenu = ms<OKMenu>(this, "Set Local Multiplayer Options");
+			multiplayerOptionsMenu = ms<OKMenu>(shared_from_this(), "Set Local Multiplayer Options");
 			//multiplayerOptionsMenu->center = false;
 		}
 
@@ -5993,7 +6006,7 @@ void OKGame::localMultiplayerPlayerJoinMenuUpdate()
 
 	if (localMultiplayerPlayerJoinMenu == nullptr)
 	{
-		localMultiplayerPlayerJoinMenu = ms<OKMenu>(this, "Local Multiplayer Host/Join Menu");
+		localMultiplayerPlayerJoinMenu = ms<OKMenu>(shared_from_this(), "Local Multiplayer Host/Join Menu");
 		localMultiplayerPlayerJoinMenu->addInfo("Press the Space key or A on your controller to join");
 		localMultiplayerPlayerJoinMenu->addInfo("Press Esc or Select on your controller to return to Title Screen");
 
@@ -6052,8 +6065,8 @@ void OKGame::localMultiplayerPlayerJoinMenuUpdate()
 			{
 				p->confirmed = true;
 
-				p->gameCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, p->gameLogic->currentGameSequence->name, 12, true, OKMenu::menuColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
-				p->difficultyCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, p->gameLogic->currentGameSequence->currentDifficultyName, 12, true, OKMenu::menuColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
+				p->gameCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, p->gameLogic->currentGameSequence->name, 12, true, BobMenu::menuColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
+				p->difficultyCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, p->gameLogic->currentGameSequence->currentDifficultyName, 12, true, BobMenu::menuColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 			}
 
 		}
@@ -6065,7 +6078,7 @@ void OKGame::localMultiplayerPlayerJoinMenuUpdate()
 		{
 			if (localMultiplayerPressStartCaption == nullptr)
 			{
-				localMultiplayerPressStartCaption = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, (int)(getHeight() - 50), -1, "Press the Enter key or Start on your controller to start game", 16, true, OKMenu::menuColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
+				localMultiplayerPressStartCaption = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, (int)(getHeight() - 50), -1, "Press the Enter key or Start on your controller to start game", 16, true, BobMenu::menuColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 				localMultiplayerPressStartCaption->flashing = true;
 				localMultiplayerPressStartCaption->flashingTicksPerFlash = 1000;
 			}
@@ -6104,7 +6117,7 @@ void OKGame::localMultiplayerPlayerJoinMenuUpdate()
 				sp<PuzzlePlayer> p = ms<PuzzlePlayer>(ms<GameLogic>(this, -1));
 				p->useKeyboard = true;
 				players->push_back(p);
-				p->nameCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, "Local (Keyboard)", 12, true, OKMenu::menuColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
+				p->nameCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, "Local (Keyboard)", 12, true, BobMenu::menuColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 			}
 		}
 	}
@@ -6125,7 +6138,7 @@ void OKGame::localMultiplayerPlayerJoinMenuUpdate()
 
 	for (int controllerNum = 0; controllerNum < getControlsManager()->gameControllers->size(); controllerNum++)
 	{
-		sp<GameController> g = getControlsManager()->gameControllers->at(controllerNum);
+		sp<GameController> g = borrowed<GameController>(getControlsManager()->gameControllers->at(controllerNum));
 
 		if (g->a_Pressed())
 		{
@@ -6135,15 +6148,15 @@ void OKGame::localMultiplayerPlayerJoinMenuUpdate()
 				for (int i = 0; i < players->size(); i++)
 				{
 					sp<PuzzlePlayer> p = players->at(i);
-					if (p->gameController == g)alreadyInUse = true;
+					if (p->gameController == g.get())alreadyInUse = true;
 				}
 
 				if (!alreadyInUse)
 				{
 					sp<PuzzlePlayer> p = ms<PuzzlePlayer>(ms<GameLogic>(this, -1));
-					p->gameController = g;
+					p->gameController = g.get();
 					players->push_back(p);
-					p->nameCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, "Local (Controller " + to_string(controllerNum) + ")", 12, true, OKMenu::menuColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
+					p->nameCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, "Local (Controller " + to_string(controllerNum) + ")", 12, true, BobMenu::menuColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 				}
 			}
 		}
@@ -6153,7 +6166,7 @@ void OKGame::localMultiplayerPlayerJoinMenuUpdate()
 			for (int i = 0; i < players->size(); i++)
 			{
 				sp<PuzzlePlayer> p = players->at(i);
-				if (p->gameController == g)
+						if (p->gameController == g.get())
 				{
 					players->erase(players->begin()+i);
 					//delete p;
@@ -6232,7 +6245,7 @@ void OKGame::localMultiplayerPlayerJoinMenuRender()
 			sy0 = (float)((int)(getHeight() / 6 * 1));
 			sy1 = sy0 + (float)((int)(t->getImageHeight() * ratio));
 
-			GLUtils::drawTexture(t, tx0, tx1, ty0, ty1, sx0, sx1, sy0, sy1, 1.0f, GLUtils::FILTER_NEAREST);
+			GLUtils::drawTexture(t->getTextureID(), tx0, tx1, ty0, ty1, sx0, sx1, sy0, sy1, 1.0f, GLUtils::FILTER_NEAREST);
 		}
 
 		float x = (float)((int)sx0);
@@ -6285,16 +6298,16 @@ void OKGame::playerDifficultyMiniMenuUpdate(sp<PuzzlePlayer>p)
 
 
 
-		if (p->menu == nullptr)
+		if (p->okMenu == nullptr)
 		{
-			p->menu = ms<OKMenu>(this, "");
-			p->menu->center = false;
-			p->menu->setFontSize(12);
+			p->okMenu = ms<OKMenu>(shared_from_this(), "");
+			p->okMenu->center = false;
+			p->okMenu->setFontSize(12);
 			GameType g;
 
 			for (int i = 0; i<g.difficultyTypes->size(); i++)
 			{
-				p->menu->add(g.difficultyTypes->at(i)->name);
+				p->okMenu->add(g.difficultyTypes->at(i)->name);
 			}
 		}
 
@@ -6310,7 +6323,7 @@ void OKGame::playerDifficultyMiniMenuUpdate(sp<PuzzlePlayer>p)
 			}
 			else
 			{
-				sp<GameController>g = p->gameController;
+				sp<GameController> g = borrowed<GameController>(p->gameController);
 				if (g != nullptr)
 				{
 					if (g->up_Pressed())up = true;
@@ -6321,12 +6334,12 @@ void OKGame::playerDifficultyMiniMenuUpdate(sp<PuzzlePlayer>p)
 
 			if (up)
 			{
-				p->menu->up();
+				p->okMenu->up();
 			}
 
 			if (down)
 			{
-				p->menu->down();
+				p->okMenu->down();
 			}
 
 			if (a)
@@ -6338,17 +6351,17 @@ void OKGame::playerDifficultyMiniMenuUpdate(sp<PuzzlePlayer>p)
 				{
 					string difficultyName = g.difficultyTypes->at(i)->name;
 
-					if (p->menu->isSelectedID(difficultyName))
+					if (p->okMenu->isSelectedID(difficultyName))
 					{
 						game->currentGameSequence->currentDifficultyName = difficultyName;
 						p->setDifficulty = true;
 					}
 				}
 
-				if (p->menu != nullptr)
+				if (p->okMenu != nullptr)
 				{
-					//delete p->menu;
-					p->menu = nullptr;
+					//delete p->okMenu;
+					p->okMenu = nullptr;
 				}
 
 
@@ -6362,9 +6375,9 @@ void OKGame::playerDifficultyMiniMenuUpdate(sp<PuzzlePlayer>p)
 void OKGame::playerDifficultyMiniMenuRender(sp<PuzzlePlayer>p, float x, float y)
 {//=========================================================================================================================
 
-	if (p->menu != nullptr)
+	if (p->okMenu != nullptr)
 	{
-		p->menu->render((int)y, (int)x);
+		p->okMenu->render((int)y, (int)x);
 	}
 }
 
@@ -6380,33 +6393,33 @@ void OKGame::playerGameSequenceMiniMenuUpdate(sp<PuzzlePlayer>p)
 
 	if (p != nullptr)
 	{
-		if (p->menu == nullptr)
+		if (p->okMenu == nullptr)
 		{
-			p->menu = ms<OKMenu>(this, "");
-			p->menu->center = false;
-			p->menu->setFontSize(14);
-			p->menu->outline = false;
+			p->okMenu = ms<OKMenu>(shared_from_this(), "");
+			p->okMenu->center = false;
+			p->okMenu->setFontSize(14);
+			p->okMenu->outline = false;
 
 			if (p->selectGameSequenceOrSingleGameTypeMiniMenuShowing)
 			{
-				p->menu->add(PLAY_GAME_SEQUENCE);
-				p->menu->add(PLAY_SINGLE_GAME_TYPE);
+				p->okMenu->add(PLAY_GAME_SEQUENCE);
+				p->okMenu->add(PLAY_SINGLE_GAME_TYPE);
 			}
 
 			if(p->selectGameSequenceMiniMenuShowing)
 			{
-				populateGameSequencesMenu(p->menu);
+				populateGameSequencesMenu(p->okMenu);
 			}
 
 			if (p->gameSequenceOptionsMiniMenuShowing)
 			{
-				p->menu->add(RANDOMIZE_SEQUENCE);
-				p->menu->add(PLAY_THROUGH_SEQUENCE_IN_ORDER);
+				p->okMenu->add(RANDOMIZE_SEQUENCE);
+				p->okMenu->add(PLAY_THROUGH_SEQUENCE_IN_ORDER);
 			}
 
 			if(p->selectSingleGameTypeMiniMenuShowing)
 			{
-				populateGameTypesMenu(p->menu);
+				populateGameTypesMenu(p->okMenu);
 			}
 		}
 
@@ -6422,7 +6435,7 @@ void OKGame::playerGameSequenceMiniMenuUpdate(sp<PuzzlePlayer>p)
 			}
 			else
 			{
-				sp<GameController>g = p->gameController;
+				sp<GameController> g = borrowed<GameController>(p->gameController);
 				if (g != nullptr)
 				{
 					if (g->UP_HELD)up = true;
@@ -6437,7 +6450,7 @@ void OKGame::playerGameSequenceMiniMenuUpdate(sp<PuzzlePlayer>p)
 
 				if (p->upRepeatedStarted == false)
 				{
-					p->menu->up();
+					p->okMenu->up();
 					p->upRepeatedStarted = true;
 					p->upLastTime = currentTime;
 				}
@@ -6452,7 +6465,7 @@ void OKGame::playerGameSequenceMiniMenuUpdate(sp<PuzzlePlayer>p)
 						if (ticksPassed > 300)
 						{
 							p->upLastTime = currentTime;
-							p->menu->up();
+							p->okMenu->up();
 							p->upRepeating = true;
 						}
 					}
@@ -6461,7 +6474,7 @@ void OKGame::playerGameSequenceMiniMenuUpdate(sp<PuzzlePlayer>p)
 						if (ticksPassed > 30)
 						{
 							p->upLastTime = currentTime;
-							p->menu->up();
+							p->okMenu->up();
 						}
 					}
 				}
@@ -6478,7 +6491,7 @@ void OKGame::playerGameSequenceMiniMenuUpdate(sp<PuzzlePlayer>p)
 
 				if (p->downRepeatedStarted == false)
 				{
-					p->menu->down();
+					p->okMenu->down();
 					p->downRepeatedStarted = true;
 					p->downLastTime = currentTime;
 				}
@@ -6492,7 +6505,7 @@ void OKGame::playerGameSequenceMiniMenuUpdate(sp<PuzzlePlayer>p)
 						if (ticksPassed > 300)
 						{
 							p->downLastTime = currentTime;
-							p->menu->down();
+							p->okMenu->down();
 							p->downRepeating = true;
 						}
 					}
@@ -6501,7 +6514,7 @@ void OKGame::playerGameSequenceMiniMenuUpdate(sp<PuzzlePlayer>p)
 						if (ticksPassed > 30)
 						{
 							p->downLastTime = currentTime;
-							p->menu->down();
+							p->okMenu->down();
 						}
 					}
 				}
@@ -6518,11 +6531,11 @@ void OKGame::playerGameSequenceMiniMenuUpdate(sp<PuzzlePlayer>p)
 
 				if (p->selectGameSequenceOrSingleGameTypeMiniMenuShowing)
 				{
-					if (p->menu->isSelectedID(PLAY_GAME_SEQUENCE))
+					if (p->okMenu->isSelectedID(PLAY_GAME_SEQUENCE))
 					{
 						p->selectGameSequenceMiniMenuShowing = true;
 					}
-					if (p->menu->isSelectedID(PLAY_SINGLE_GAME_TYPE))
+					if (p->okMenu->isSelectedID(PLAY_SINGLE_GAME_TYPE))
 					{
 						p->selectSingleGameTypeMiniMenuShowing = true;
 					}
@@ -6536,7 +6549,7 @@ void OKGame::playerGameSequenceMiniMenuUpdate(sp<PuzzlePlayer>p)
 					{
 
 						sp<GameSequence>gs = loadedGameSequences->at(i);
-						if (p->menu->isSelectedID(gs->uuid))
+						if (p->okMenu->isSelectedID(gs->uuid))
 						{
 							game->currentGameSequence = gs;
 							p->gameSequenceOptionsMiniMenuShowing = true;
@@ -6549,12 +6562,12 @@ void OKGame::playerGameSequenceMiniMenuUpdate(sp<PuzzlePlayer>p)
 				else
 				if(p->gameSequenceOptionsMiniMenuShowing)
 				{
-					if (p->menu->isSelectedID(RANDOMIZE_SEQUENCE))
+					if (p->okMenu->isSelectedID(RANDOMIZE_SEQUENCE))
 					{
 						game->currentGameSequence->randomizeSequence = true;
 					}
 
-					if (p->menu->isSelectedID(PLAY_THROUGH_SEQUENCE_IN_ORDER))
+					if (p->okMenu->isSelectedID(PLAY_THROUGH_SEQUENCE_IN_ORDER))
 					{
 						game->currentGameSequence->randomizeSequence = false;
 					}
@@ -6570,7 +6583,7 @@ void OKGame::playerGameSequenceMiniMenuUpdate(sp<PuzzlePlayer>p)
 					for (int i = 0; i<loadedGameTypes->size(); i++)
 					{
 						sp<GameType>g = loadedGameTypes->at(i);
-						if (p->menu->isSelectedID(g->uuid))
+						if (p->okMenu->isSelectedID(g->uuid))
 						{
 							game->currentGameSequence = ms<GameSequence>();
 							game->currentGameSequence->gameTypes->push_back(g);
@@ -6583,10 +6596,10 @@ void OKGame::playerGameSequenceMiniMenuUpdate(sp<PuzzlePlayer>p)
 
 				}
 
-				if (p->menu != nullptr)
+				if (p->okMenu != nullptr)
 				{
-					//delete p->menu;
-					p->menu = nullptr;
+					//delete p->okMenu;
+					p->okMenu = nullptr;
 				}
 
 			}
@@ -6599,9 +6612,9 @@ void OKGame::playerGameSequenceMiniMenuUpdate(sp<PuzzlePlayer>p)
 void OKGame::playerGameSequenceMiniMenuRender(sp<PuzzlePlayer>p, float x, float y)
 {//=========================================================================================================================
 
-	if (p->menu != nullptr)
+	if (p->okMenu != nullptr)
 	{
-		p->menu->render((int)y, (int)x);
+		p->okMenu->render((int)y, (int)x);
 	}
 }
 

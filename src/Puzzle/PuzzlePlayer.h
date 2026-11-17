@@ -10,6 +10,8 @@
 #include "src/Utility/Color.h"
 #include <memory>
 
+class OKMenu;
+
 //=========================================================================================================================
 class PuzzlePlayer
 {//=========================================================================================================================
@@ -61,6 +63,9 @@ public:
 	shared_ptr<GameLogic> gameLogic = nullptr;
 	bool confirmed = false;
 	shared_ptr<BobMenu> menu = nullptr;
+	// OKGame fork stores its OKMenu-typed per-player menu here instead
+	// (OKMenu and BobMenu are sibling classes, one field can't hold both).
+	shared_ptr<OKMenu> okMenu = nullptr;
 	bool selectGameSequenceOrSingleGameTypeMiniMenuShowing = true;
 	bool selectGameSequenceMiniMenuShowing = false;
 	bool gameSequenceOptionsMiniMenuShowing = false;
