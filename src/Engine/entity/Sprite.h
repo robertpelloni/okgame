@@ -11,7 +11,7 @@ class Logger;
 #include "../../Utility/gl/GLUtils.h"
 #include "../EnginePart.h"
 #include "../rpg/event/EventData.h"
-#include "CTPL-master/ctpl_stl.h"
+#include "ctpl_stl.h" // lib/CTPL (was CTPL-master/ in the author's local layout)
 
 class SpriteAnimationSequence;
 class SpriteData;

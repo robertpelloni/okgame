@@ -20,7 +20,10 @@ class BobTexture;
 
 
 
-class Sprite : public EnginePart
+// Renamed from Sprite: this file is the pre-refactor copy kept for
+// reference (not in the build; BobSprite.cpp is not compiled). It still
+// declared `class Sprite`, colliding with the live Sprite in Sprite.h.
+class BobSprite : public EnginePart
 {
 public:
 	static Logger log;
@@ -61,8 +64,8 @@ public:
 
 	bool preloadedFromData = false;
 
-	Sprite();
-	Sprite(Engine* g);
+	BobSprite();
+	BobSprite(Engine* g);
 	void preloadFromDataFile(string name);
 	//The following method was originally marked 'synchronized':
 	void initializeWithSpriteData(SpriteData* spriteData);

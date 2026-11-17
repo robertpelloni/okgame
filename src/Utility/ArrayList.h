@@ -121,6 +121,15 @@ public:
 	ArrayList* operator->() { return this; }
 	const ArrayList* operator->() const { return this; }
 
+	// std::vector-style surface the refactor's call sites were written
+	// against (push_back/erase/begin/end), forwarded to the storage.
+	void push_back(const E& e) { v.push_back(e); }
+	auto begin() { return v.begin(); }
+	auto end() { return v.end(); }
+	auto begin() const { return v.begin(); }
+	auto end() const { return v.end(); }
+	auto erase(typename std::vector<E>::iterator it) { return v.erase(it); }
+
 	int indexOf(const E& e) const {
 		auto it = std::find(v.begin(), v.end(), e);
 		if (it != v.end()) {

@@ -41,6 +41,9 @@ public:
 	vector<string> list();
 };
 
+// Rename alias: newer code (Sprite) refers to BobFile as OKFile.
+using OKFile = BobFile;
+
 
 
 

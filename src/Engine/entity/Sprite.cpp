@@ -1,4 +1,18 @@
 #include "stdafx.h"
+#include "Sprite.h"
+
+// GLUtils still loads BobTexture; Sprite stores OKTexture (an identical
+// fork of the same class). Convert by GL texture id + dimensions.
+static sp<OKTexture> toOKTexture(const sp<BobTexture>& t)
+{
+	if (t == nullptr) return nullptr;
+	sp<OKTexture> o = ms<OKTexture>(t->cacheName, t->getTextureID());
+	o->setImageWidth(t->getImageWidth());
+	o->setImageHeight(t->getImageHeight());
+	o->setTextureWidth(t->getTextureWidth());
+	o->setTextureHeight(t->getTextureHeight());
+	return o;
+}
 
 //------------------------------------------------------------------------------
 //Copyright Robert Pelloni.
@@ -25,7 +39,7 @@ Sprite::Sprite()
 
 Sprite::Sprite(sp<Engine> g)
 { //=========================================================================================================================
-	this->e = g;
+	this->e = g.get();
 
 
 }
@@ -46,7 +60,7 @@ void Sprite::preloadFromDataFile(string name)
 	//load txt, parse id,width,height,frames,animations
 
 	//log->info("loadTextFileFromExePathIntosp<VectorOfStringsAndTrim "+name);
-	sp<vector<string>>stringList = FileUtils::loadTextFileFromExePathIntoVectorOfStringsAndTrim("data/sprite/" + name + ".txt");
+	sp<vector<string>> stringList = ms<vector<string>>(FileUtils::loadTextFileFromExePathIntoVectorOfStringsAndTrim("data/sprite/" + name + ".txt")->v);
 
 	preloadedFromData = true;
 
@@ -117,10 +131,10 @@ void Sprite::preloadFromDataFile(string name)
 
 
 	//log->info("Loading " + name);
-	texture = GLUtils::getTextureFromPNGExePath("data/sprite/" + name + ".png");
+	texture = toOKTexture(GLUtils::getTextureFromPNGExePath("data/sprite/" + name + ".png"));
 
 
-	if (getEventData() != nullptr)this->event = ms<Event>(e, getEventData(), this);
+	if (getEventData() != nullptr)this->event = ms<Event>(borrowed<Engine>(e), getEventData(), shared_from_this());
 	//System.out.println("Texture Size:"+texture.getWidth()+","+texture.getHeight());
 
 	//      
@@ -183,7 +197,7 @@ void Sprite::initializeWithSpriteData(sp<SpriteData> spriteData)
 
 	if (getName() == "" || getName() == "none" || getName().length() == 0)
 	{
-		this->texture = GLUtils::blankTexture;
+		this->texture = toOKTexture(GLUtils::blankTexture);
 	}
 
 
@@ -198,10 +212,10 @@ void Sprite::initializeWithSpriteData(sp<SpriteData> spriteData)
 
 	if (getIsItem() || getIsGame())
 	{
-		ms<Item>(Item(getEngine(), shared_from_this()));
+		ms<Item>(getEngine(), this);
 	}
 
-	if (getEventData() != nullptr)this->event = ms<Event>(e, getEventData(), this);
+	if (getEventData() != nullptr)this->event = ms<Event>(borrowed<Engine>(e), getEventData(), shared_from_this());
 }
 
 
@@ -209,7 +223,7 @@ void Sprite::initializeWithSpriteData(sp<SpriteData> spriteData)
 void Sprite::sendDataRequest(const string &spriteName)
 {//=========================================================================================================================
 	//if engine is NOT gameEngine return, i.e. it is OKGame and all the sprites are preloaded, should never get here though because it only calls this is sprite isnt initialized, etc.
-	if ((dynamic_cast<BGClientEngine*>(getEngine().get()) != nullptr) == false)return;
+	if ((dynamic_cast<BGClientEngine*>(getEngine()) != nullptr) == false)return;
 
 	long long startTime = lastSentDataRequestTime;
 	long long currentTime = System::currentHighResTimer();
@@ -226,7 +240,7 @@ void Sprite::sendDataRequest(const string &spriteName)
 void Sprite::sendDataRequest(int id)
 {//=========================================================================================================================
 
-	if ((dynamic_cast<BGClientEngine*>(getEngine().get()) != nullptr) == false)return;
+	if ((dynamic_cast<BGClientEngine*>(getEngine()) != nullptr) == false)return;
 
 	long long startTime = lastSentDataRequestTime;
 	long long currentTime = System::currentHighResTimer();
@@ -360,7 +374,7 @@ void Sprite::drawFrame(sp<OKTexture> texture, int frame, float x0, float x1, flo
 		ty1 -= 0.01f*th;
 
 
-		GLUtils::drawTexture(texture, tx0, tx1, ty0, ty1, x0, x1, y0, y1, r, g, b, a, filter);
+		texture->bind(); GLUtils::drawTexture(tx0, tx1, ty0, ty1, x0, x1, y0, y1, r, g, b, a, filter);
 
 	}
 }
@@ -373,7 +387,7 @@ void Sprite::draw(float tx0, float tx1, float ty0, float ty1, float x0, float x1
 	if (texture != nullptr)
 	{
 
-		GLUtils::drawTexture(texture, tx0, tx1, ty0, ty1, x0, x1, y0, y1, r, g, b, a, filter);
+		texture->bind(); GLUtils::drawTexture(tx0, tx1, ty0, ty1, x0, x1, y0, y1, r, g, b, a, filter);
 
 
 		//set frame in texture
@@ -562,17 +576,17 @@ void Sprite::loadTextures()
 			if (getIsRandom() == true)
 			{
 				//we don't need to construct a normal hq2x png for randoms because it will never be used.
-				texture = GLUtils::blankTexture;
+				texture = toOKTexture(GLUtils::blankTexture);
 			}
 			else
 			{
 				if (useHQ2X == true)
 				{
-					texture = GLUtils::getTextureFromPNGAbsolutePath(FileUtils::cacheDir + "_" + getDataMD5() + "/" + "2x" + "/" + getDataMD5());
+					texture = toOKTexture(GLUtils::getTextureFromPNGAbsolutePath(FileUtils::cacheDir + "_" + getDataMD5() + "/" + "2x" + "/" + getDataMD5()));
 				}
 				else
 				{
-					texture = GLUtils::getTextureFromPNGAbsolutePath(FileUtils::cacheDir + "_" + getDataMD5() + "/" + "1x" + "/" + getDataMD5());
+					texture = toOKTexture(GLUtils::getTextureFromPNGAbsolutePath(FileUtils::cacheDir + "_" + getDataMD5() + "/" + "1x" + "/" + getDataMD5()));
 				}
 			}
 
@@ -581,16 +595,16 @@ void Sprite::loadTextures()
 			{
 				if (useHQ2X)
 				{
-					shadowTexture = GLUtils::getTextureFromPNGAbsolutePath(FileUtils::cacheDir + "_" + getDataMD5() + "/" + "2x" + "/" + getDataMD5() + "s");
+					shadowTexture = toOKTexture(GLUtils::getTextureFromPNGAbsolutePath(FileUtils::cacheDir + "_" + getDataMD5() + "/" + "2x" + "/" + getDataMD5() + "s"));
 				}
 				else
 				{
-					shadowTexture = GLUtils::getTextureFromPNGAbsolutePath(FileUtils::cacheDir + "_" + getDataMD5() + "/" + "1x" + "/" + getDataMD5() + "s");
+					shadowTexture = toOKTexture(GLUtils::getTextureFromPNGAbsolutePath(FileUtils::cacheDir + "_" + getDataMD5() + "/" + "1x" + "/" + getDataMD5() + "s"));
 				}
 			}
 			else
 			{
-				shadowTexture = GLUtils::blankTexture;
+				shadowTexture = toOKTexture(GLUtils::blankTexture);
 			}
 
 			//incrementSpriteTexturesLoaded();
@@ -608,11 +622,11 @@ void Sprite::loadTextures()
 
 				if (indexDataIntArray == nullptr)
 				{
-					indexDataIntArray = FileUtils::loadIntFileFromCacheOrDownloadIfNotExist("" + getDataMD5());
+					indexDataIntArray = sp<IntArray>(FileUtils::loadIntFileFromCacheOrDownloadIfNotExist("" + getDataMD5()));
 				}
 				if (paletteRGBByteArray == nullptr)
 				{
-					paletteRGBByteArray = FileUtils::loadByteFileFromCacheOrDownloadIfNotExist("" + getPaletteMD5());
+					paletteRGBByteArray = sp<ByteArray>(FileUtils::loadByteFileFromCacheOrDownloadIfNotExist("" + getPaletteMD5()));
 				}
 
 
@@ -932,7 +946,7 @@ sp<ByteArray> Sprite::createRandomSpriteTextureByteBuffer_S(int eyeSet, int skin
 
 	if (useHQ2X)
 	{
-		sp<BufferedImage> hq2xSpriteBufferedImage = ms<BufferedImage>((new HQ2X())->hq2x(spriteBufferedImage.get()));
+		sp<BufferedImage> hq2xSpriteBufferedImage((new HQ2X())->hq2x(spriteBufferedImage.get()));
 
 		setHQ2XAlphaFromOriginal(hq2xSpriteBufferedImage, spriteBufferedImage);
 
@@ -1045,7 +1059,7 @@ void Sprite::createSpriteTexturePNG_S()
 
 	if (useHQ2X)
 	{
-		sp<BufferedImage> hq2xSpriteBufferedImage = ms<BufferedImage>((new HQ2X())->hq2x(spriteBufferedImage.get()));
+		sp<BufferedImage> hq2xSpriteBufferedImage((new HQ2X())->hq2x(spriteBufferedImage.get()));
 
 		setHQ2XAlphaFromOriginal(hq2xSpriteBufferedImage, spriteBufferedImage);
 
@@ -1056,13 +1070,13 @@ void Sprite::createSpriteTexturePNG_S()
 		//---------------------------
 		//save to png
 		//---------------------------
-		FileUtils::saveImage("" + FileUtils::cacheDir + "_" + getDataMD5() + "/" + "2x" + "/" + getDataMD5(), hq2xSpriteBufferedImage);
+		FileUtils::saveImage("" + FileUtils::cacheDir + "_" + getDataMD5() + "/" + "2x" + "/" + getDataMD5(), hq2xSpriteBufferedImage.get());
 
 		//delete hq2xSpriteBufferedImage;
 	}
 	else
 	{
-		FileUtils::saveImage("" + FileUtils::cacheDir + "_" + getDataMD5() + "/" + "1x" + "/" + getDataMD5(), spriteBufferedImage);
+		FileUtils::saveImage("" + FileUtils::cacheDir + "_" + getDataMD5() + "/" + "1x" + "/" + getDataMD5(), spriteBufferedImage.get());
 	}
 }
 
@@ -1133,7 +1147,7 @@ void Sprite::createSpriteShadowTexturePNG_S()
 
 	if (useHQ2X)
 	{
-	    sp<BufferedImage> hq2xShadowBufferedImage = ms<BufferedImage>((new HQ2X())->hq2x(spriteBufferedImage.get()));
+	    sp<BufferedImage> hq2xShadowBufferedImage((new HQ2X())->hq2x(spriteBufferedImage.get()));
 	
 	    setHQ2XAlphaFromOriginal(hq2xShadowBufferedImage, spriteBufferedImage);
 	
@@ -1147,7 +1161,7 @@ void Sprite::createSpriteShadowTexturePNG_S()
 	    //save to png
 	    //---------------------------
 	
-	    FileUtils::saveImage("" + FileUtils::cacheDir + "_" + getDataMD5() + "/" + "2x" + "/" + getDataMD5() + "s", hq2xShadowBufferedImage);
+	    FileUtils::saveImage("" + FileUtils::cacheDir + "_" + getDataMD5() + "/" + "2x" + "/" + getDataMD5() + "s", hq2xShadowBufferedImage.get());
 	
 	    //hq2xShadowBufferedImage.flush();
 	    //Java to C++ Converter converted the original 'null' assignment to a call to 'delete', but you should review memory allocation of all pointer variables in the converted code:
@@ -1155,7 +1169,7 @@ void Sprite::createSpriteShadowTexturePNG_S()
 	}
 	else
 	{
-	    FileUtils::saveImage("" + FileUtils::cacheDir + "_" + getDataMD5() + "/" + "1x" + "/" + getDataMD5() + "s", spriteBufferedImage);
+	    FileUtils::saveImage("" + FileUtils::cacheDir + "_" + getDataMD5() + "/" + "1x" + "/" + getDataMD5() + "s", spriteBufferedImage.get());
 	}
 }
 
@@ -1728,7 +1742,7 @@ bool Sprite::getForceMD5Export()
 sp<EventData> Sprite::getEventData()
 {
 	sp<SpriteData> s = getData();
-	return s->getEventData();
+	return sp<EventData>(s->getEventData(), [](EventData*) {});
 }
 
 
@@ -1758,6 +1772,10 @@ int Sprite::getUtilityOffsetYPixelsHQ()
 
 sp<vector<sp<SpriteAnimationSequence>>> Sprite::getAnimationList()
 {
-	return getData()->getAnimationList();
+	// SpriteData stores raw pointers; wrap each borrowed (owned by data).
+	ArrayList<SpriteAnimationSequence*>* list = getData()->getAnimationList();
+	sp<vector<sp<SpriteAnimationSequence>>> out = ms<vector<sp<SpriteAnimationSequence>>>();
+	for (SpriteAnimationSequence* seq : list->v) out->push_back(borrowed<SpriteAnimationSequence>(seq));
+	return out;
 }
 
