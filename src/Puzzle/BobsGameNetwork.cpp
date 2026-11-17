@@ -461,7 +461,7 @@ bool BobsGame::udpPeerMessageReceived(shared_ptr<UDPPeerConnection> c, string s)
 				string gameSequenceString = s.substr(0, s.find(":"));
 				s = s.substr(s.find(":") + 1);
 
-				NetworkGameSequence *gs = NetworkGameSequence::fromBase64GZippedXML(gameSequenceString);
+				sp<NetworkGameSequence> gs = sp<NetworkGameSequence>(NetworkGameSequence::fromBase64GZippedXML(gameSequenceString));
 				
 				if (gs == nullptr)
 				{
@@ -557,7 +557,7 @@ bool BobsGame::udpPeerMessageReceived(shared_ptr<UDPPeerConnection> c, string s)
 
 				if (networkMultiplayerLobbyMenuShowing == false)return true;
 				
-				Room *newRoom = Room::decodeRoomData(s,true);
+				sp<Room> newRoom = sp<Room>(Room::decodeRoomData(s,true));
 				if (newRoom == nullptr)
 				{
 					log.error("Could not decode room data:"+s);
@@ -570,7 +570,7 @@ bool BobsGame::udpPeerMessageReceived(shared_ptr<UDPPeerConnection> c, string s)
 				bool found = false;
 				for (int i = 0; i<rooms.size(); i++)
 				{
-					Room *r = rooms.get(i);
+					sp<Room> r = rooms.get(i);
 					if (r->uuid == newRoom->uuid)
 					{
 						found = true;
@@ -592,11 +592,10 @@ bool BobsGame::udpPeerMessageReceived(shared_ptr<UDPPeerConnection> c, string s)
 
 				for (int i = 0; i<rooms.size(); i++)
 				{
-					Room *r = rooms.get(i);
+					sp<Room> r = rooms.get(i);
 					if(r->hostPeer==c)
 					{
 						rooms.removeAt(i);
-						delete r;
 					}
 				}
 
@@ -652,7 +651,7 @@ bool BobsGame::udpPeerMessageReceived(shared_ptr<UDPPeerConnection> c, string s)
 }
 
 //=========================================================================================================================
-void BobsGame::addToRoomsMenu(Room* c, string name, string id)
+void BobsGame::addToRoomsMenu(shared_ptr<Room> c, string name, string id)
 {//=========================================================================================================================
 
 	bool add = true;
@@ -720,7 +719,7 @@ void BobsGame::populateRoomsMenu()
 		roomsMenu->addInfo("Your Friends' Games:");
 		for (int i = 0; i < rooms.size(); i++)
 		{
-			Room* c = rooms.get(i);
+			sp<Room> c = rooms.get(i);
 
 			if (c->multiplayer_PrivateRoom && c->hostPeer != nullptr)
 			{
@@ -737,7 +736,7 @@ void BobsGame::populateRoomsMenu()
 			roomsMenu->addInfo("Public Free Play Games:");
 			for (int i = 0; i < rooms.size(); i++)
 			{
-				Room* c = rooms.get(i);
+				sp<Room> c = rooms.get(i);
 
 				if (c->multiplayer_PrivateRoom == false && c->multiplayer_TournamentRoom == false)
 				{
@@ -752,7 +751,7 @@ void BobsGame::populateRoomsMenu()
 			roomsMenu->addInfo("Public Tournament Games:");
 			for (int i = 0; i < rooms.size(); i++)
 			{
-				Room* c = rooms.get(i);
+				sp<Room> c = rooms.get(i);
 
 				if (c->multiplayer_PrivateRoom == false && c->multiplayer_TournamentRoom == true)
 				{
@@ -790,7 +789,7 @@ void BobsGame::networkMultiplayerLobbyMenuUpdate()
 		if (errorLabel == nullptr)errorLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, 0, -1, " ", 16, true, BobMenu::errorColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 		//if (onlineFriendsLabel == nullptr)onlineFriendsLabel = getCaptionManager()->newManagedCaption(0, 0, -1, "Online Friends:", oswald_16, BobMenu::menuColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 
-		networkMultiplayerLobbyMenu = new BobMenu(this, "Network Multiplayer Lobby");
+		networkMultiplayerLobbyMenu = ms<BobMenu>(this, "Network Multiplayer Lobby");
 		networkMultiplayerLobbyMenu->center = false;
 		//networkMultiplayerLobbyMenu->font = oswald_12;
 
@@ -831,7 +830,7 @@ void BobsGame::networkMultiplayerLobbyMenuUpdate()
 
 	if(yourStatsMenu == nullptr)
 	{
-		yourStatsMenu = new BobMenu(this, "", "Your Stats");
+		yourStatsMenu = ms<BobMenu>(this, "", "Your Stats");
 		yourStatsMenu->center = false;
 		yourStatsMenu->setFontSize(14);
 		yourStatsMenu->outline = false;
@@ -845,7 +844,7 @@ void BobsGame::networkMultiplayerLobbyMenuUpdate()
 	}
 	if(leaderBoardMenu == nullptr)
 	{
-		leaderBoardMenu = new BobMenu(this, "", "High Scores");
+		leaderBoardMenu = ms<BobMenu>(this, "", "High Scores");
 		leaderBoardMenu->center = false;
 		leaderBoardMenu->setFontSize(14);
 		leaderBoardMenu->outline = false;
@@ -887,7 +886,7 @@ void BobsGame::networkMultiplayerLobbyMenuUpdate()
 			if (currentRoom->hostPeer == nullptr)
 			{
 				//add peer with room host userID so that I try to connect to it which gets ip address from STUN server
-				UDPPeerConnection* p = BobNet::addFriendID(currentRoom->multiplayer_HostUserID, UDPPeerConnection::ANON_TYPE);
+				sp<UDPPeerConnection> p = BobNet::addFriendID(currentRoom->multiplayer_HostUserID, UDPPeerConnection::ANON_TYPE);
 
 				//tell server to tell host to connect to me
 				getServerConnection()->tellBobsGameRoomHostMyUserID_S(currentRoom->uuid);
@@ -984,7 +983,7 @@ void BobsGame::networkMultiplayerLobbyMenuUpdate()
 	//show friends online list
 	if (friendsOnlineMenu == nullptr)
 	{
-		friendsOnlineMenu = new BobMenu(this, "", "Friends Online:");
+		friendsOnlineMenu = ms<BobMenu>(this, "", "Friends Online:");
 		friendsOnlineMenu->setFontSize(12);
 		friendsOnlineMenu->center = false;
 		friendsOnlineMenu->outline = false;
@@ -993,7 +992,7 @@ void BobsGame::networkMultiplayerLobbyMenuUpdate()
 
 	if (roomsMenu == nullptr)
 	{
-		roomsMenu = new BobMenu(this, "");
+		roomsMenu = ms<BobMenu>(this, "");
 		roomsMenu->setFontSize(14);
 		roomsMenu->center = false;
 		populateRoomsMenu();
@@ -1054,7 +1053,7 @@ void BobsGame::networkMultiplayerLobbyMenuUpdate()
 		{
 			for (int i = 0; i < rooms.size(); i++)
 			{
-				Room* c = rooms.get(i);
+				sp<Room> c = rooms.get(i);
 				if (roomsMenu->isSelectedID(c->uuid, false, mx, my))
 				{
 					string uuid = c->room_GameTypeUUID;
@@ -1101,7 +1100,7 @@ void BobsGame::networkMultiplayerLobbyMenuUpdate()
 		onlineFriends.clear();
 		for (int i = 0; i < (int)BobNet::udpConnections.size(); i++)
 		{
-			UDPPeerConnection* f = BobNet::udpConnections.get(i);
+			sp<UDPPeerConnection> f = BobNet::udpConnections.get(i);
 			if (f->getConnectedToPeer_S() == true && f->getGotFriendData_S() == true)// && f->getStatus_S() == BobNet::status_AVAILABLE)
 			{
 				if (onlineFriends.contains(f) == false)
@@ -1116,7 +1115,7 @@ void BobsGame::networkMultiplayerLobbyMenuUpdate()
 		
 		for (int i = 0; i < onlineFriends.size(); i++)
 		{
-			UDPPeerConnection* c = onlineFriends.get(i);
+			sp<UDPPeerConnection> c = onlineFriends.get(i);
 
 //			if (c->bobsGameHosting)
 //			{
@@ -1167,10 +1166,9 @@ void BobsGame::networkMultiplayerLobbyMenuUpdate()
 			//remove non private rooms since we are adding them back
 			for (int i = 0; i<rooms.size(); i++)
 			{
-				Room *r = rooms.get(i);
+				sp<Room> r = rooms.get(i);
 				if (r->multiplayer_PrivateRoom == false)
 				{
-					delete r;
 					rooms.removeAt(i);
 					i--;
 				}
@@ -1182,7 +1180,7 @@ void BobsGame::networkMultiplayerLobbyMenuUpdate()
 				string roomDescription = s.substr(0, s.find(":"));
 				s = s.substr(s.find(":") + 1);
 				
-				Room *newRoom = Room::decodeRoomData(roomDescription, false);
+				sp<Room> newRoom = sp<Room>(Room::decodeRoomData(roomDescription, false));
 
 				rooms.add(newRoom);
 
@@ -1372,7 +1370,7 @@ void BobsGame::networkMultiplayerLobbyMenuUpdate()
 							//get the selected host
 							for (int i = 0; i < rooms.size(); i++)
 							{
-								Room* c = rooms.get(i);
+								sp<Room> c = rooms.get(i);
 								if (roomsMenu->isSelectedID(c->uuid, clicked, mx, my))
 								{
 									currentRoom = c;
@@ -1444,7 +1442,7 @@ void BobsGame::networkMultiplayerLobbyMenuUpdate()
 								string prefix = friendUserName.substr(0, friendUserName.find("`"));
 								friendUserName = prefix + friendUserName.substr(friendUserName.find("`") + 1);
 							}
-							getServerConnection()->doAddFriendByUsername(statusLabel, errorLabel, friendUserName);
+							getServerConnection()->doAddFriendByUsername(statusLabel.get(), errorLabel.get(), friendUserName);
 						}
 
 						if (networkMultiplayerLobbyMenu->isSelectedID("Join room", clicked, mx, my))
@@ -1468,7 +1466,7 @@ void BobsGame::networkMultiplayerLobbyMenuUpdate()
 							//
 
 							hosting = true;
-							currentRoom = new Room();
+							currentRoom = ms<Room>();
 						}
 
 						if (networkMultiplayerLobbyMenu->isSelectedID("Log out", clicked, mx, my))
@@ -1516,47 +1514,39 @@ void BobsGame::networkMultiplayerLobbyMenuUpdate()
 		if (networkMultiplayerLobbyMenu != nullptr)
 		{
 			networkMultiplayerLobbyMenuCursorPosition = networkMultiplayerLobbyMenu->cursorPosition;
-			delete networkMultiplayerLobbyMenu;
 			networkMultiplayerLobbyMenu = nullptr;
 		}
 
 		if (friendsOnlineMenu != nullptr)
 		{
-			delete friendsOnlineMenu;
 			friendsOnlineMenu = nullptr;
 		}
 
 		if (yourStatsMenu != nullptr)
 		{
-			delete yourStatsMenu;
 			yourStatsMenu = nullptr;
 		}
 		if (leaderBoardMenu != nullptr)
 		{
-			delete leaderBoardMenu;
 			leaderBoardMenu = nullptr;
 		}
 		if (roomsMenu != nullptr)
 		{
-			delete roomsMenu;
 			roomsMenu = nullptr;
 		}
 
 		if (selectGameSequenceOrSingleGameTypeMenu != nullptr)
 		{
-			delete selectGameSequenceOrSingleGameTypeMenu;
 			selectGameSequenceOrSingleGameTypeMenu = nullptr;
 		}
 
 		if (selectGameSequenceMenu != nullptr)
 		{
-			delete selectGameSequenceMenu;
 			selectGameSequenceMenu = nullptr;
 		}
 
 		if (selectSingleGameTypeMenu != nullptr)
 		{
-			delete selectSingleGameTypeMenu;
 			selectSingleGameTypeMenu = nullptr;
 		}
 
@@ -1586,7 +1576,7 @@ void BobsGame::networkMultiplayerLobbyMenuRender()
 
 	GLUtils::drawFilledRect(BobMenu::bgColor->ri(), BobMenu::bgColor->gi(), BobMenu::bgColor->bi(), 0, (float)getWidth(), 0, (float)getHeight(), 1.0f);
 
-	BobTexture* t = onlineTexture;
+	sp<BobTexture> t = onlineTexture;
 
 	if (networkMultiplayerLobbyMenu == nullptr)return;
 
@@ -1615,19 +1605,19 @@ void BobsGame::networkMultiplayerLobbyMenuRender()
 
 	if (selectGameSequenceOrSingleGameTypeFilterMenuShowing && selectGameSequenceOrSingleGameTypeMenu != nullptr)
 	{
-		Caption *c = networkMultiplayerLobbyMenu->getCaptionByID(FilterByGameSequenceOrTypeRooms);
+		sp<Caption> c = networkMultiplayerLobbyMenu->getCaptionByID(FilterByGameSequenceOrTypeRooms);
 		selectGameSequenceOrSingleGameTypeMenu->render(c->screenY + c->getHeight() + 8, c->screenX + c->getWidth() / 2, GLUtils::getViewportHeight(), true, nullptr, nullptr, true);
 	}
 
 	if (selectGameSequenceFilterMenuShowing && selectGameSequenceMenu != nullptr)
 	{
-		Caption *c = networkMultiplayerLobbyMenu->getCaptionByID(FilterByGameSequenceOrTypeRooms);
+		sp<Caption> c = networkMultiplayerLobbyMenu->getCaptionByID(FilterByGameSequenceOrTypeRooms);
 		selectGameSequenceMenu->render(c->screenY + c->getHeight() + 8, c->screenX + c->getWidth() / 2, GLUtils::getViewportHeight(), true, nullptr, nullptr, true);
 	}
 
 	if (selectSingleGameTypeFilterMenuShowing && selectSingleGameTypeMenu != nullptr)
 	{
-		Caption *c = networkMultiplayerLobbyMenu->getCaptionByID(FilterByGameSequenceOrTypeRooms);
+		sp<Caption> c = networkMultiplayerLobbyMenu->getCaptionByID(FilterByGameSequenceOrTypeRooms);
 		selectSingleGameTypeMenu->render(c->screenY + c->getHeight() + 8, c->screenX + c->getWidth() / 2, GLUtils::getViewportHeight(), true, nullptr, nullptr, true);
 	}
 }
@@ -1639,7 +1629,7 @@ void BobsGame::selectGameSequenceOrSingleGameTypeFilterMenuUpdate()
 
 	if (selectGameSequenceOrSingleGameTypeMenu == nullptr)
 	{
-		selectGameSequenceOrSingleGameTypeMenu = new BobMenu(this, "");
+		selectGameSequenceOrSingleGameTypeMenu = ms<BobMenu>(this, "");
 		selectGameSequenceOrSingleGameTypeMenu->add("None");
 		selectGameSequenceOrSingleGameTypeMenu->add("Select Game Sequence");
 		selectGameSequenceOrSingleGameTypeMenu->add("Select Single Game Type");
@@ -1692,7 +1682,6 @@ void BobsGame::selectGameSequenceOrSingleGameTypeFilterMenuUpdate()
 		if (selectGameSequenceOrSingleGameTypeMenu != nullptr)
 		{
 			selectGameSequenceOrSingleGameTypeMenuCursorPosition = selectGameSequenceOrSingleGameTypeMenu->cursorPosition;
-			delete selectGameSequenceOrSingleGameTypeMenu;
 			selectGameSequenceOrSingleGameTypeMenu = nullptr;
 		}
 	}
@@ -1704,7 +1693,7 @@ void BobsGame::selectGameSequenceFilterMenuUpdate()
 
 	if (selectGameSequenceMenu == nullptr)
 	{
-		selectGameSequenceMenu = new BobMenu(this, "");
+		selectGameSequenceMenu = ms<BobMenu>(this, "");
 		selectGameSequenceMenu->center = false;
 		selectGameSequenceMenu->outline = false;
 
@@ -1731,7 +1720,7 @@ void BobsGame::selectGameSequenceFilterMenuUpdate()
 	{
 		for (int i = 0; i<loadedGameSequences.size(); i++)
 		{
-			GameSequence *g = loadedGameSequences.get(i);
+			sp<GameSequence> g = loadedGameSequences.get(i);
 			if (selectGameSequenceMenu->isSelectedID(g->uuid, clicked, mx, my))
 			{
 				filterByGameSequenceName = g->name;
@@ -1750,7 +1739,6 @@ void BobsGame::selectGameSequenceFilterMenuUpdate()
 		if (selectGameSequenceMenu != nullptr)
 		{
 			selectGameSequenceMenuCursorPosition = selectGameSequenceMenu->cursorPosition;
-			delete selectGameSequenceMenu;
 			selectGameSequenceMenu = nullptr;
 		}
 	}
@@ -1763,7 +1751,7 @@ void BobsGame::selectSingleGameTypeFilterMenuUpdate()
 
 	if (selectSingleGameTypeMenu == nullptr)
 	{
-		selectSingleGameTypeMenu = new BobMenu(this, "");
+		selectSingleGameTypeMenu = ms<BobMenu>(this, "");
 		selectSingleGameTypeMenu->center = false;
 		selectSingleGameTypeMenu->setFontSize(14);
 		selectSingleGameTypeMenu->outline = false;
@@ -1861,7 +1849,7 @@ void BobsGame::selectSingleGameTypeFilterMenuUpdate()
 	{
 		for (int i = 0; i<loadedGameTypes.size(); i++)
 		{
-			GameType *g = loadedGameTypes.get(i);
+			sp<GameType> g = loadedGameTypes.get(i);
 			if (selectSingleGameTypeMenu->isSelectedID(g->uuid, clicked, mx, my))
 			{
 				filterByGameTypeUUID = g->uuid;
@@ -1879,7 +1867,6 @@ void BobsGame::selectSingleGameTypeFilterMenuUpdate()
 		if (selectSingleGameTypeMenu != nullptr)
 		{
 			selectSingleGameTypeMenuCursorPosition = selectSingleGameTypeMenu->cursorPosition;
-			delete selectSingleGameTypeMenu;
 			selectSingleGameTypeMenu = nullptr;
 		}
 	}
@@ -1896,7 +1883,7 @@ void BobsGame::networkMultiplayerPlayerJoinMenuUpdate()
 		if (statusLabel == nullptr)statusLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, 0, -1, " ", 16, true, BobMenu::statusColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 		if (errorLabel == nullptr)errorLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, 0, -1, " ", 16, true, BobMenu::errorColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 
-		networkMultiplayerPlayerJoinMenu = new BobMenu(this, "Network Multiplayer Room");
+		networkMultiplayerPlayerJoinMenu = ms<BobMenu>(this, "Network Multiplayer Room");
 		networkMultiplayerPlayerJoinMenu->setFontSize(12);
 		networkMultiplayerPlayerJoinMenu->addInfo("Press the Space key or A on your controller to join. Multiple local players are allowed.");
 		networkMultiplayerPlayerJoinMenu->addInfo("Press Esc or Select on your controller to return to lobby.");
@@ -1908,7 +1895,7 @@ void BobsGame::networkMultiplayerPlayerJoinMenuUpdate()
 	if (networkMultiplayerRoomRulesMenu == nullptr)
 	{
 		//show room options
-		networkMultiplayerRoomRulesMenu = new BobMenu(this, "");
+		networkMultiplayerRoomRulesMenu = ms<BobMenu>(this, "");
 		networkMultiplayerRoomRulesMenu->setFontSize(12);
 		networkMultiplayerRoomRulesMenu->center = false;
 
@@ -1988,13 +1975,13 @@ void BobsGame::networkMultiplayerPlayerJoinMenuUpdate()
 
 			if (networkMultiplayerJoinedPeersMenu == nullptr)
 			{
-				networkMultiplayerJoinedPeersMenu = new BobMenu(this, "");
+				networkMultiplayerJoinedPeersMenu = ms<BobMenu>(this, "");
 				networkMultiplayerJoinedPeersMenu->setFontSize(12);
 				networkMultiplayerJoinedPeersMenu->center = false;
 			}
 			networkMultiplayerJoinedPeersMenu->clear();
 
-			BobMenu::MenuItem* m = networkMultiplayerJoinedPeersMenu->addInfo("Peers In Room:");
+			sp<BobMenu::MenuItem> m = networkMultiplayerJoinedPeersMenu->addInfo("Peers In Room:");
 
 			string name = "You";
 			if (hosting)name += " (Host)";
@@ -2002,7 +1989,7 @@ void BobsGame::networkMultiplayerPlayerJoinMenuUpdate()
 
 			for (int i = 0; i < joinedPeers->size(); i++)
 			{
-				UDPPeerConnection *c = joinedPeers->get(i);
+				sp<UDPPeerConnection> c = joinedPeers->get(i);
 				name = c->getUserName();
 				if (hosting == false && c == currentRoom->hostPeer)name += " (Host)";
 				m = networkMultiplayerJoinedPeersMenu->addInfo(name);
@@ -2268,7 +2255,7 @@ void BobsGame::networkMultiplayerPlayerJoinMenuUpdate()
 	if (getControlsManager()->key_ESC_Pressed() || getControlsManager()->miniGame_SELECT_Pressed())
 	{
 		//are you sure?  this will disconnect everyone from your game
-		Caption *c = nullptr;
+		sp<Caption> c = nullptr;
 
 		if (hosting)c = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_SCREEN, 0, 0, -1, "Are you sure you want to cancel the game?  Press Space or Start to stay, Esc or Select again to cancel and quit.", 16, true, BobMenu::errorColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 		else c = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_SCREEN, 0, 0, -1, "Are you sure you want to leave the game?  Press Space or Start to stay, Esc or Select again to cancel and quit.", 16, true, BobMenu::errorColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
@@ -2359,13 +2346,8 @@ void BobsGame::networkMultiplayerPlayerJoinMenuUpdate()
 
 		if (networkMultiplayerPlayerJoinMenu != nullptr)
 		{
-			delete networkMultiplayerPlayerJoinMenu;
 			networkMultiplayerPlayerJoinMenu = nullptr;
-
-			delete networkMultiplayerRoomRulesMenu;
 			networkMultiplayerRoomRulesMenu = nullptr;
-
-			delete networkMultiplayerJoinedPeersMenu;
 			networkMultiplayerJoinedPeersMenu = nullptr;
 
 			if (networkMultiplayerPlayerJoinMenuPressStartCaption != nullptr)
@@ -2396,9 +2378,9 @@ void BobsGame::networkMultiplayerPlayerJoinMenuRender()
 
 	GLUtils::drawFilledRect(BobMenu::bgColor->ri(), BobMenu::bgColor->gi(), BobMenu::bgColor->bi(), 0, (float)getWidth(), 0, (float)getHeight(), 1.0f);
 
-	BobTexture* kt = keyboardIconTexture;
-	BobTexture* gt = controllerIconTexture;
-	BobTexture* nt = networkIconTexture;
+	sp<BobTexture> kt = keyboardIconTexture;
+	sp<BobTexture> gt = controllerIconTexture;
+	sp<BobTexture> nt = networkIconTexture;
 
 	if (networkMultiplayerPlayerJoinMenu == nullptr)return;
 	if (networkMultiplayerRoomRulesMenu == nullptr)return;
@@ -2423,7 +2405,7 @@ void BobsGame::networkMultiplayerPlayerJoinMenuRender()
 	{
 		shared_ptr<PuzzlePlayer> p = players.get(i);
 
-		BobTexture *t = nullptr;
+		sp<BobTexture> t = nullptr;
 
 		if (p->useKeyboard)t = kt;
 		else
@@ -2452,7 +2434,7 @@ void BobsGame::networkMultiplayerPlayerJoinMenuRender()
 				sy0 = (float)((int)(bottomY + 20));
 				sy1 = sy0 + (float)((int)(t->getImageHeight() * ratio));
 
-				GLUtils::drawTexture(t, tx0, tx1, ty0, ty1, sx0, sx1, sy0, sy1, 1.0f, GLUtils::FILTER_NEAREST);
+				GLUtils::drawTexture(t.get(), tx0, tx1, ty0, ty1, sx0, sx1, sy0, sy1, 1.0f, GLUtils::FILTER_NEAREST);
 			}
 
 			float x = (float)((int)sx0);
