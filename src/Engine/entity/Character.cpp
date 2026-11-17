@@ -1,4 +1,17 @@
 #include "stdafx.h"
+#include "Sprite.h"
+
+// Entity::render still takes BobTexture; Sprite stores OKTexture (fork).
+static sp<BobTexture> toBobTexture(const sp<OKTexture>& t)
+{
+	if (t == nullptr) return nullptr;
+	sp<BobTexture> o = ms<BobTexture>("", t->getTextureID());
+	o->setImageWidth(t->getImageWidth());
+	o->setImageHeight(t->getImageHeight());
+	o->setTextureWidth(t->getTextureWidth());
+	o->setTextureHeight(t->getTextureHeight());
+	return o;
+}
 
 //------------------------------------------------------------------------------
 //Copyright Robert Pelloni.
@@ -30,7 +43,7 @@ Character::Character(Engine* g, std::shared_ptr<EntityData> data, std::shared_pt
 
 	initCharacter();
 
-	if (getEventData() != nullptr)this->event = std::make_shared<BobEvent>(g, getEventData(), this);
+	if (getEventData() != nullptr)this->event = std::make_shared<BobEvent>(g, getEventData().get(), this);
 }
 
 void Character::initCharacter()
@@ -65,10 +78,10 @@ Character::Character(Engine* g, string name, std::shared_ptr<Sprite> sprite, std
 	this->map = m;
 
 
-	getCurrentMap()->currentState->characterList.add(this);
-	getCurrentMap()->currentState->characterByNameHashtable.put(name, this);
+	getCurrentMap()->currentState->characterList.add(std::static_pointer_cast<Character>(shared_from_this()));
+	getCurrentMap()->currentState->characterByNameHashtable.put(name, std::static_pointer_cast<Character>(shared_from_this()));
 
-	if (getEventData() != nullptr)this->event = std::make_shared<BobEvent>(g, getEventData(), this);
+	if (getEventData() != nullptr)this->event = std::make_shared<BobEvent>(g, getEventData().get(), this);
 }
 
 void Character::initCurrentAnimationFromSprite()
@@ -118,7 +131,7 @@ void Character::render(float alpha)
 	}
 	else
 	{
-		Entity::render(alpha, uniqueTexture, sprite->shadowTexture);
+		Entity::render(alpha, uniqueTexture, toBobTexture(sprite->shadowTexture));
 	}
 }
 
@@ -1146,7 +1159,7 @@ void Character::generateUniqueTexture(int genderIndex, int archetypeIndex, int s
 	getSpriteManager()->getSpriteByNameOrRequestFromServerIfNotExist("RANDOMshoeColors")->loadTextures();
 
 
-	Sprite* sprite = nullptr;
+	std::shared_ptr<Sprite> sprite = nullptr;
 
 
 	if (genderIndex == 0) //male
@@ -1404,11 +1417,9 @@ void Character::generateUniqueTexture(int genderIndex, int archetypeIndex, int s
 	int pantsSet = pantsColorIndex + 1;
 	int shoeSet = shoeColorIndex + 1;
 
-	ByteArray* bb = sprite->createRandomSpriteTextureByteBuffer_S(eyeSet, skinSet, hairSet, shirtSet, pantsSet, shoeSet, -1);
+	sp<ByteArray> bb = sprite->createRandomSpriteTextureByteBuffer_S(eyeSet, skinSet, hairSet, shirtSet, pantsSet, shoeSet, -1);
 
-	uniqueTexture = std::shared_ptr<BobTexture>(GLUtils::getTextureFromData("random" + to_string(Math::randLessThan(500)), sprite->getImageWidth(), sprite->getImageHeight() * sprite->getNumFrames(), bb));
-
-	delete bb;
+	uniqueTexture = std::shared_ptr<BobTexture>(GLUtils::getTextureFromData("random" + to_string(Math::randLessThan(500)), sprite->getImageWidth(), sprite->getImageHeight() * sprite->getNumFrames(), bb.get()));
 
 	if (this->sprite != nullptr)
 	{
@@ -1465,7 +1476,7 @@ void Character::setCharacterNameAndCaption(BobColor nameColor, const string& nam
 			{
 				nameCaption = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_OVER_ENTITY, 0, 0, -1, name, BobFont::font_normal_16_outlined_smooth, &this->nameColor);
 			}
-			if(nameCaption)nameCaption->setEntity(this);
+			if(nameCaption)nameCaption->setEntity(shared_from_this());
 		}
 		else
 		{
@@ -1490,7 +1501,7 @@ void Character::setCharacterNameAndCaption(BobColor nameColor, const string& nam
 			{
 				accountTypeCaption = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_OVER_ENTITY, 0, 0, -1, accountTypeName, BobFont::font_normal_8_outlined, &this->accountTypeNameColor);
 			}
-			if(accountTypeCaption)accountTypeCaption->setEntity(this);
+			if(accountTypeCaption)accountTypeCaption->setEntity(shared_from_this());
 		}
 		else
 		{
@@ -1694,16 +1705,16 @@ int Character::walkToXYWithPathFinding(float x, float y)
 		{
 			if (pathfinder->path != nullptr)
 			{
-				if (pathPosition < (int)pathfinder->path->pathTiles->size() - 1)
+				if (pathPosition < (int)pathfinder->path->pathTiles.size() - 1)
 				{
 					int pathX = pathfinder->path->getTileXForPathIndex(pathPosition) * 8 * 2 + 8; //+8 for center of tile
 					int pathY = pathfinder->path->getTileYForPathIndex(pathPosition) * 8 * 2 + 8;
 
-					for (int i = pathPosition + 1; i < (int)pathfinder->path->pathTiles->size(); i++)
+					for (int i = pathPosition + 1; i < (int)pathfinder->path->pathTiles.size(); i++)
 					{
-						if (pathfinder->path->getTileXForPathIndex(i) * 8 * 2 + 8 == pathX && (i + 1 < (int)pathfinder->path->pathTiles->size()) && pathfinder->path->getTileXForPathIndex(i + 1) * 8 * 2 + 8 == pathX)
+						if (pathfinder->path->getTileXForPathIndex(i) * 8 * 2 + 8 == pathX && (i + 1 < (int)pathfinder->path->pathTiles.size()) && pathfinder->path->getTileXForPathIndex(i + 1) * 8 * 2 + 8 == pathX)
 						{
-							pathfinder->path->pathTiles->erase(pathfinder->path->pathTiles->begin() + i);
+							pathfinder->path->pathTiles.erase(pathfinder->path->pathTiles.begin() + i);
 						}
 						else
 						{
@@ -1711,11 +1722,11 @@ int Character::walkToXYWithPathFinding(float x, float y)
 						}
 					}
 
-					for (int i = pathPosition + 1; i < (int)pathfinder->path->pathTiles->size(); i++)
+					for (int i = pathPosition + 1; i < (int)pathfinder->path->pathTiles.size(); i++)
 					{
-						if (pathfinder->path->getTileYForPathIndex(i) * 8 * 2 + 8 == pathY && (i + 1 < (int)pathfinder->path->pathTiles->size()) && pathfinder->path->getTileYForPathIndex(i + 1) * 8 * 2 + 8 == pathY)
+						if (pathfinder->path->getTileYForPathIndex(i) * 8 * 2 + 8 == pathY && (i + 1 < (int)pathfinder->path->pathTiles.size()) && pathfinder->path->getTileYForPathIndex(i + 1) * 8 * 2 + 8 == pathY)
 						{
-							pathfinder->path->pathTiles->erase(pathfinder->path->pathTiles->begin() + i);
+							pathfinder->path->pathTiles.erase(pathfinder->path->pathTiles.begin() + i);
 						}
 						else
 						{
@@ -4334,7 +4345,7 @@ void Character::renderDebugBoxes()
 	{
 		if (pathfinder->path != nullptr)
 		{
-			for (int i = 0; i < (int)pathfinder->path->pathTiles->size(); i++)
+			for (int i = 0; i < (int)pathfinder->path->pathTiles.size(); i++)
 			{
 				GLUtils::drawBox(getMap()->getScreenX((float)pathfinder->path->getTileXForPathIndex(i) * 8 * 2, 16), getMap()->getScreenX((float)pathfinder->path->getTileXForPathIndex(i) * 8 * 2 + 16, 16), getMap()->getScreenY((float)pathfinder->path->getTileYForPathIndex(i) * 8 * 2, 16), getMap()->getScreenY((float)pathfinder->path->getTileYForPathIndex(i) * 8 * 2 + 16, 16), 255, 255, 255);
 			}

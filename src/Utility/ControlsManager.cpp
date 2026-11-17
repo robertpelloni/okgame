@@ -39,17 +39,17 @@ ControlsManager::ControlsManager()
 }
 
 
-//			case SDLK_w:
+//			case SDLK_W:
 //				//case SDLK_UP: {KEY_UP_HELD=1;YUU_WALKING_SPEED=YUU_WALKING_SPEED_KEYBOARD;} break;
-//			case SDLK_s:
+//			case SDLK_S:
 //				//case SDLK_DOWN: {KEY_DOWN_HELD=1;YUU_WALKING_SPEED=YUU_WALKING_SPEED_KEYBOARD;} break;
-//			case SDLK_a:
+//			case SDLK_A:
 //				// case SDLK_LEFT: {KEY_LEFT_HELD=1;YUU_WALKING_SPEED=YUU_WALKING_SPEED_KEYBOARD;} break;
-//			case SDLK_d:
+//			case SDLK_D:
 //				//case SDLK_RIGHT: {KEY_RIGHT_HELD=1;YUU_WALKING_SPEED=YUU_WALKING_SPEED_KEYBOARD;} break;
 
 //
-//				//case SDLK_f: {if(fpsmeter==0)fpsmeter=1;else fpsmeter=0;}break;
+//				//case SDLK_F: {if(fpsmeter==0)fpsmeter=1;else fpsmeter=0;}break;
 //				//debug
 //
 //				//map layer on/off
@@ -79,13 +79,13 @@ ControlsManager::ControlsManager()
 //				}
 //				break;
 //
-//			case SDLK_f:
+//			case SDLK_F:
 //				{
 //					if (GLUtils::GLOBAL_FRAMEBUFFER_FILTER_TYPE == GL_LINEAR)GLUtils::GLOBAL_FRAMEBUFFER_FILTER_TYPE = GL_NEAREST; else GLUtils::GLOBAL_FRAMEBUFFER_FILTER_TYPE = GL_LINEAR;
 //				}
 //				break;
 //
-//			case SDLK_BACKQUOTE:
+//			case SDLK_GRAVE:
 //				{
 //					if (error_console_on == 1)error_console_on = 0; else error_console_on = 1;
 //				}
@@ -219,19 +219,19 @@ void ControlsManager::initControllers()
 				gameControllers.add(g);
 
 				SDL_Haptic *haptic = nullptr;
-				haptic = SDL_HapticOpenFromJoystick(joy);
+				haptic = SDL_OpenHapticFromJoystick(joy);
 				if (haptic != NULL)
 				{
 					log.info("Found Haptic on Controller: " + string(SDL_GetJoystickName(joy)));
 					g->haptic = haptic;
 
-					SDL_HapticRumbleInit(haptic);
+					SDL_InitHapticRumble(haptic);
 
 
 	//				// See if it can do sine waves
 	//				if ((SDL_HapticQuery(haptic) & SDL_HAPTIC_SINE) == 0)
 	//				{
-	//					SDL_HapticClose(haptic); // No sine effect
+	//					SDL_CloseHaptic(haptic); // No sine effect
 	//					haptic = nullptr;
 	//				}
 				}
@@ -279,7 +279,7 @@ void ControlsManager::cleanup()
 	{
 		if(gameControllers.get(i)->haptic!=nullptr)
 		{
-			SDL_HapticClose(gameControllers.get(i)->haptic);
+			SDL_CloseHaptic(gameControllers.get(i)->haptic);
 		}
 	}
 
@@ -958,11 +958,11 @@ SDL_JoyHatEvent
 //int16 StickY = SDL_GamepadGetAxis(ControllerHandles[ControllerIndex], SDL_GAMEPAD_AXIS_LEFTY);
 
 //SDL_Joystick *JoystickHandle = SDL_GetGamepadJoystick(ControllerHandles[ControllerIndex]);
-//RumbleHandles[ControllerIndex] = SDL_HapticOpenFromJoystick(JoystickHandle);
+//RumbleHandles[ControllerIndex] = SDL_OpenHapticFromJoystick(JoystickHandle);
 //
-//if (SDL_HapticRumbleInit(RumbleHandles[ControllerIndex]) != 0)
+//if (SDL_InitHapticRumble(RumbleHandles[ControllerIndex]) != 0)
 //{
-//	SDL_HapticClose(RumbleHandles[ControllerIndex]);
+//	SDL_CloseHaptic(RumbleHandles[ControllerIndex]);
 //	RumbleHandles[ControllerIndex] = 0;
 //}
 //
@@ -970,12 +970,12 @@ SDL_JoyHatEvent
 //{
 //	if (RumbleHandle[ControllerIndex])
 //	{
-//		SDL_HapticRumblePlay(RumbleHandle[ControllerIndex], 0.5f, 2000);
+//		SDL_PlayHapticRumble(RumbleHandle[ControllerIndex], 0.5f, 2000);
 //	}
 //}
 //
 //if (RumbleHandles[ControllerIndex])
-//SDL_HapticClose(RumbleHandles[ControllerIndex]);
+//SDL_CloseHaptic(RumbleHandles[ControllerIndex]);
 //
 
 	//------------------------------------
@@ -1068,7 +1068,7 @@ SDL_JoyHatEvent
 
 				SDL_Gamepad *controller = SDL_OpenGamepad(joystickDeviceIndex);
 				SDL_Joystick *joy = SDL_GetGamepadJoystick(controller);
-				SDL_JoystickID joystickID = SDL_JoystickInstanceID(joy);
+				SDL_JoystickID joystickID = SDL_GetJoystickID(joy);
 
 				if (controllersByJoystickID.containsValue(controller) == false)
 				{
@@ -1082,7 +1082,7 @@ SDL_JoyHatEvent
 
 				controllersByJoystickID.removeAllValues(controller);
 				controllersByJoystickID.put(joystickID, controller);
-				log.debug("Found Joystick on Controller: " + string(SDL_JoystickName(joy)));
+				log.debug("Found Joystick on Controller: " + string(SDL_GetJoystickName(joy)));
 
 				for (int n = 0; n < gameControllers.size(); n++)
 				{
@@ -1101,19 +1101,19 @@ SDL_JoyHatEvent
 				gameControllers.add(g);
 
 				SDL_Haptic *haptic = nullptr;
-				haptic = SDL_HapticOpenFromJoystick(joy);
+				haptic = SDL_OpenHapticFromJoystick(joy);
 				if (haptic != NULL)
 				{
-					log.info("Found Haptic on Controller: " + string(SDL_JoystickName(joy)));
+					log.info("Found Haptic on Controller: " + string(SDL_GetJoystickName(joy)));
 					g->haptic = haptic;
 
-					SDL_HapticRumbleInit(haptic);
+					SDL_InitHapticRumble(haptic);
 
 
 					//				// See if it can do sine waves
 					//				if ((SDL_HapticQuery(haptic) & SDL_HAPTIC_SINE) == 0)
 					//				{
-					//					SDL_HapticClose(haptic); // No sine effect
+					//					SDL_CloseHaptic(haptic); // No sine effect
 					//					haptic = nullptr;
 					//				}
 				}
@@ -1139,7 +1139,7 @@ SDL_JoyHatEvent
 					GameController *g = gameControllers.get(i);
 					if (g->id == joystickID)
 					{
-						if(g->haptic!=nullptr)SDL_HapticClose(g->haptic);
+						if(g->haptic!=nullptr)SDL_CloseHaptic(g->haptic);
 						gameControllers.removeAt(i);
 						i = 0;
 					}
@@ -1160,7 +1160,7 @@ SDL_JoyHatEvent
 				{
 					SDL_Gamepad *controller = controllersByJoystickID.get(joystickID);
 					SDL_GamepadButton b = (SDL_GamepadButton)event.gbutton.button;
-					int value = event.gbutton.state;
+					int value = event.gbutton.down ? 1 : 0;
 
 
 					string s = string("Controller Button Down BobEvent: " + string(SDL_GetGamepadName(controller)));
@@ -1220,13 +1220,13 @@ SDL_JoyHatEvent
 				{
 					SDL_Gamepad *controller = controllersByJoystickID.get(id);
 					SDL_GamepadButton b = (SDL_GamepadButton)event.gbutton.button;
-					int value = event.gbutton.state;
+					int value = event.gbutton.down ? 1 : 0;
 
 					string s = string("Controller Button Up BobEvent: " + string(SDL_GetGamepadName(controller)));
 					if (b == SDL_GAMEPAD_BUTTON_SOUTH)s += (" Button: SDL_GAMEPAD_BUTTON_SOUTH");
 					if (b == SDL_GAMEPAD_BUTTON_EAST)s += (" Button: SDL_GAMEPAD_BUTTON_EAST");
 					if (b == SDL_GAMEPAD_BUTTON_WEST)s += (" Button: SDL_GAMEPAD_BUTTON_WEST");
-					if (b == SDL_GAMEPAD_BUTTON_Y)s += (" Button: SDL_GAMEPAD_BUTTON_Y");
+					if (b == SDL_GAMEPAD_BUTTON_NORTH)s += (" Button: SDL_GAMEPAD_BUTTON_NORTH");
 					if (b == SDL_GAMEPAD_BUTTON_BACK)s += (" Button: SDL_GAMEPAD_BUTTON_BACK");
 					if (b == SDL_GAMEPAD_BUTTON_GUIDE)s += (" Button: SDL_GAMEPAD_BUTTON_GUIDE");
 					if (b == SDL_GAMEPAD_BUTTON_START)s += (" Button: SDL_GAMEPAD_BUTTON_START");
@@ -1250,7 +1250,7 @@ SDL_JoyHatEvent
 							if (b == SDL_GAMEPAD_BUTTON_SOUTH)g->A_HELD = false;
 							if (b == SDL_GAMEPAD_BUTTON_EAST)g->B_HELD = false;
 							if (b == SDL_GAMEPAD_BUTTON_WEST)g->X_HELD = false;
-							if (b == SDL_GAMEPAD_BUTTON_Y)g->Y_HELD = false;
+							if (b == SDL_GAMEPAD_BUTTON_NORTH)g->Y_HELD = false;
 							if (b == SDL_GAMEPAD_BUTTON_BACK)g->SELECT_HELD = false;
 							if (b == SDL_GAMEPAD_BUTTON_GUIDE)g->START_HELD = false;
 							if (b == SDL_GAMEPAD_BUTTON_START)g->START_HELD = false;
@@ -1489,12 +1489,12 @@ SDL_JoyHatEvent
 			
 		if (event.type == SDL_EVENT_KEY_DOWN)
 		{
-			if (event.key.keysym.sym == SDLK_BACKSPACE && text.length() > 0)
+			if (event.key.key == SDLK_BACKSPACE && text.length() > 0)
 			{
 				text.pop_back();
 			}
 
-			switch (event.key.keysym.sym)
+			switch (event.key.key)
 			{
 				case SDLK_UP:KEY_UP_HELD = true;break;
 				case SDLK_DOWN:KEY_DOWN_HELD = true;break;
@@ -1503,37 +1503,37 @@ SDL_JoyHatEvent
 				case SDLK_SPACE:KEY_SPACE_HELD = true; break;
 				case SDLK_LEFTBRACKET:KEY_LBRACKET_HELD = true;break;
 				case SDLK_RIGHTBRACKET:KEY_RBRACKET_HELD = true;break;
-				case SDLK_a:KEY_A_HELD = true; break;
-				case SDLK_b:KEY_B_HELD = true; break;
-				case SDLK_c:KEY_C_HELD = true; break;
-				case SDLK_d:KEY_D_HELD = true; break;
-				case SDLK_e:KEY_E_HELD = true; break;
-				case SDLK_f:KEY_F_HELD = true; break;
-				case SDLK_g:KEY_G_HELD = true; break;
-				case SDLK_h:KEY_H_HELD = true; break;
-				case SDLK_i:KEY_I_HELD = true; break;
-				case SDLK_j:KEY_J_HELD = true; break;
-				case SDLK_k:KEY_K_HELD = true; break;
-				case SDLK_l:KEY_L_HELD = true; break;
-				case SDLK_m:KEY_M_HELD = true; break;
-				case SDLK_n:KEY_N_HELD = true; break;
-				case SDLK_o:KEY_O_HELD = true; break;
-				case SDLK_p:KEY_P_HELD = true; break;
-				case SDLK_q:KEY_Q_HELD = true; break;
-				case SDLK_r:KEY_R_HELD = true; break;
-				case SDLK_s:KEY_S_HELD = true; break;
-				case SDLK_t:KEY_T_HELD = true; break;
-				case SDLK_u:KEY_U_HELD = true; break;
-				case SDLK_v:KEY_V_HELD = true; break;
-				case SDLK_w:KEY_W_HELD = true; break;
-				case SDLK_x:KEY_X_HELD = true; break;
-				case SDLK_y:KEY_Y_HELD = true; break;
-				case SDLK_z:KEY_Z_HELD = true; break;
+				case SDLK_A:KEY_A_HELD = true; break;
+				case SDLK_B:KEY_B_HELD = true; break;
+				case SDLK_C:KEY_C_HELD = true; break;
+				case SDLK_D:KEY_D_HELD = true; break;
+				case SDLK_E:KEY_E_HELD = true; break;
+				case SDLK_F:KEY_F_HELD = true; break;
+				case SDLK_G:KEY_G_HELD = true; break;
+				case SDLK_H:KEY_H_HELD = true; break;
+				case SDLK_I:KEY_I_HELD = true; break;
+				case SDLK_J:KEY_J_HELD = true; break;
+				case SDLK_K:KEY_K_HELD = true; break;
+				case SDLK_L:KEY_L_HELD = true; break;
+				case SDLK_M:KEY_M_HELD = true; break;
+				case SDLK_N:KEY_N_HELD = true; break;
+				case SDLK_O:KEY_O_HELD = true; break;
+				case SDLK_P:KEY_P_HELD = true; break;
+				case SDLK_Q:KEY_Q_HELD = true; break;
+				case SDLK_R:KEY_R_HELD = true; break;
+				case SDLK_S:KEY_S_HELD = true; break;
+				case SDLK_T:KEY_T_HELD = true; break;
+				case SDLK_U:KEY_U_HELD = true; break;
+				case SDLK_V:KEY_V_HELD = true; break;
+				case SDLK_W:KEY_W_HELD = true; break;
+				case SDLK_X:KEY_X_HELD = true; break;
+				case SDLK_Y:KEY_Y_HELD = true; break;
+				case SDLK_Z:KEY_Z_HELD = true; break;
 				case SDLK_COMMA:KEY_COMMA_HELD = true; break;
 				case SDLK_PERIOD:KEY_PERIOD_HELD = true; break;
 				case SDLK_SLASH:KEY_FRONTSLASH_HELD = true; break;
 				case SDLK_SEMICOLON:KEY_SEMICOLON_HELD = true; break;
-				case SDLK_QUOTE:KEY_QUOTE_HELD = true; break;
+				case SDLK_APOSTROPHE:KEY_QUOTE_HELD = true; break;
 				case SDLK_BACKSLASH:KEY_BACKSLASH_HELD = true; break;
 
 				case SDLK_LSHIFT:KEY_LSHIFT_HELD = true; break;
@@ -1560,7 +1560,7 @@ SDL_JoyHatEvent
 				case SDLK_F12:KEY_F12_HELD = true;break;
 				case SDLK_SYSREQ:KEY_PRINTSCREEN_HELD = true;break;
 				case SDLK_PAUSE:KEY_PAUSE_HELD = true; break;
-				case SDLK_BACKQUOTE:KEY_TILDE_HELD = true;break;
+				case SDLK_GRAVE:KEY_TILDE_HELD = true;break;
 				case SDLK_1:KEY_1_HELD = true;break;
 				case SDLK_2:KEY_2_HELD = true;break;
 				case SDLK_3:KEY_3_HELD = true;break;
@@ -1589,9 +1589,9 @@ SDL_JoyHatEvent
 		
 		if (event.type == SDL_EVENT_KEY_UP)
 		{
-			//int key = event.key.keysym.sym & ~SDLK_SCANCODE_MASK;
+			//int key = event.key.key & ~SDLK_SCANCODE_MASK;
 
-			switch (event.key.keysym.sym)
+			switch (event.key.key)
 			{
 				case SDLK_UP:KEY_UP_HELD = false; break;
 				case SDLK_DOWN:KEY_DOWN_HELD = false; break;
@@ -1600,37 +1600,37 @@ SDL_JoyHatEvent
 				case SDLK_SPACE:KEY_SPACE_HELD = false; break;
 				case SDLK_LEFTBRACKET:KEY_LBRACKET_HELD = false; break;
 				case SDLK_RIGHTBRACKET:KEY_RBRACKET_HELD = false; break;
-				case SDLK_a:KEY_A_HELD = false; break;
-				case SDLK_b:KEY_B_HELD = false; break;
-				case SDLK_c:KEY_C_HELD = false; break;
-				case SDLK_d:KEY_D_HELD = false; break;
-				case SDLK_e:KEY_E_HELD = false; break;
-				case SDLK_f:KEY_F_HELD = false; break;
-				case SDLK_g:KEY_G_HELD = false; break;
-				case SDLK_h:KEY_H_HELD = false; break;
-				case SDLK_i:KEY_I_HELD = false; break;
-				case SDLK_j:KEY_J_HELD = false; break;
-				case SDLK_k:KEY_K_HELD = false; break;
-				case SDLK_l:KEY_L_HELD = false; break;
-				case SDLK_m:KEY_M_HELD = false; break;
-				case SDLK_n:KEY_N_HELD = false; break;
-				case SDLK_o:KEY_O_HELD = false; break;
-				case SDLK_p:KEY_P_HELD = false; break;
-				case SDLK_q:KEY_Q_HELD = false; break;
-				case SDLK_r:KEY_R_HELD = false; break;
-				case SDLK_s:KEY_S_HELD = false; break;
-				case SDLK_t:KEY_T_HELD = false; break;
-				case SDLK_u:KEY_U_HELD = false; break;
-				case SDLK_v:KEY_V_HELD = false; break;
-				case SDLK_w:KEY_W_HELD = false; break;
-				case SDLK_x:KEY_X_HELD = false; break;
-				case SDLK_y:KEY_Y_HELD = false; break;
-				case SDLK_z:KEY_Z_HELD = false; break;
+				case SDLK_A:KEY_A_HELD = false; break;
+				case SDLK_B:KEY_B_HELD = false; break;
+				case SDLK_C:KEY_C_HELD = false; break;
+				case SDLK_D:KEY_D_HELD = false; break;
+				case SDLK_E:KEY_E_HELD = false; break;
+				case SDLK_F:KEY_F_HELD = false; break;
+				case SDLK_G:KEY_G_HELD = false; break;
+				case SDLK_H:KEY_H_HELD = false; break;
+				case SDLK_I:KEY_I_HELD = false; break;
+				case SDLK_J:KEY_J_HELD = false; break;
+				case SDLK_K:KEY_K_HELD = false; break;
+				case SDLK_L:KEY_L_HELD = false; break;
+				case SDLK_M:KEY_M_HELD = false; break;
+				case SDLK_N:KEY_N_HELD = false; break;
+				case SDLK_O:KEY_O_HELD = false; break;
+				case SDLK_P:KEY_P_HELD = false; break;
+				case SDLK_Q:KEY_Q_HELD = false; break;
+				case SDLK_R:KEY_R_HELD = false; break;
+				case SDLK_S:KEY_S_HELD = false; break;
+				case SDLK_T:KEY_T_HELD = false; break;
+				case SDLK_U:KEY_U_HELD = false; break;
+				case SDLK_V:KEY_V_HELD = false; break;
+				case SDLK_W:KEY_W_HELD = false; break;
+				case SDLK_X:KEY_X_HELD = false; break;
+				case SDLK_Y:KEY_Y_HELD = false; break;
+				case SDLK_Z:KEY_Z_HELD = false; break;
 				case SDLK_COMMA:KEY_COMMA_HELD = false; break;
 				case SDLK_PERIOD:KEY_PERIOD_HELD = false; break;
 				case SDLK_SLASH:KEY_FRONTSLASH_HELD = false; break;
 				case SDLK_SEMICOLON:KEY_SEMICOLON_HELD = false; break;
-				case SDLK_QUOTE:KEY_QUOTE_HELD = false; break;
+				case SDLK_APOSTROPHE:KEY_QUOTE_HELD = false; break;
 				case SDLK_BACKSLASH:KEY_BACKSLASH_HELD = false; break;
 				case SDLK_LSHIFT:KEY_LSHIFT_HELD = false; break;
 				case SDLK_RSHIFT:KEY_RSHIFT_HELD = false; break;
@@ -1656,7 +1656,7 @@ SDL_JoyHatEvent
 				case SDLK_F12:KEY_F12_HELD = false; break;
 				case SDLK_SYSREQ:KEY_PRINTSCREEN_HELD = false; break;
 				case SDLK_PAUSE:KEY_PAUSE_HELD = false; break;
-				case SDLK_BACKQUOTE:KEY_TILDE_HELD = false; break;
+				case SDLK_GRAVE:KEY_TILDE_HELD = false; break;
 				case SDLK_1:KEY_1_HELD = false; break;
 				case SDLK_2:KEY_2_HELD = false; break;
 				case SDLK_3:KEY_3_HELD = false; break;
@@ -2038,7 +2038,7 @@ void ControlsManager::doHaptic(GameController *g, int length, int magnitude, int
 #ifndef ORBIS
 	if (g->haptic == nullptr)return;
 
-	SDL_HapticRumblePlay(g->haptic, (float)magnitude/32767.0f, length);
+	SDL_PlayHapticRumble(g->haptic, (float)magnitude/32767.0f, length);
 
 #else
 
