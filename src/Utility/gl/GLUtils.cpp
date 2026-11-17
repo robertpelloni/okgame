@@ -1854,7 +1854,7 @@ void GLUtils::loadShaderBinary(const string& filename, GLuint shaderID)
 
 	ByteArray* binaryData = FileUtils::loadByteFileFromExePath(filename);
 
-	glShaderBinary(1, &shaderID, 2/*CG profile*/, (const GLvoid*)binaryData->data(), binaryData->size());
+	(void)binaryData; log.warn("loadShaderBinary: precompiled CG shader binaries are not supported on this platform: " + filename);
 
 }
 
@@ -2033,10 +2033,10 @@ bool GLUtils::makeShader(const string& name, GLuint* shaderProgram, const string
 		{
 
 #ifndef ORBIS
-			glAttachObjectARB(*shaderProgram, vertShader);
+			glAttachObjectARB(*shaderProgram, vertShaderID);
 			e("glAttachObjectARB");
 
-			glAttachObjectARB(*shaderProgram, fragShader);
+			glAttachObjectARB(*shaderProgram, fragShaderID);
 			e("glAttachObjectARB");
 
 			glLinkProgramARB(*shaderProgram);
@@ -3369,8 +3369,8 @@ void GLUtils::drawOutlinedString(const string& text, float screenX0, float scree
 	outlineBobColor.darker();
 	outlineBobColor.darker();
 	SDL_Color outlineColor = { (Uint8)outlineBobColor.ri() ,(Uint8)outlineBobColor.gi(),(Uint8)outlineBobColor.bi(),(Uint8)outlineBobColor.ai() };
-	SDL_Surface* surface = TTF_RenderText_Blended(outlineFont, text.c_str(), outlineColor);
-	SDL_Surface *fg_surface = TTF_RenderText_Blended(ttfFont, text.c_str(), textSDLColor);
+	SDL_Surface* surface = TTF_RenderText_Blended(outlineFont, text.c_str(), 0, outlineColor);
+	SDL_Surface *fg_surface = TTF_RenderText_Blended(ttfFont, text.c_str(), 0, textSDLColor);
 	SDL_Rect rect = { OUTLINE_SIZE, OUTLINE_SIZE, fg_surface->w, fg_surface->h };
 
 	// blit text onto its outline 
@@ -3386,7 +3386,7 @@ void GLUtils::drawOutlinedString(const string& text, float screenX0, float scree
 	int width = fg_surface->w + OUTLINE_SIZE * 2;
 	int height = fg_surface->h + OUTLINE_SIZE * 2;
 
-	BobTexture* texture = GLUtils::loadTextureFromSurface("Caption" + to_string(rand()) + to_string(rand()), surface);
+	shared_ptr<BobTexture> texture = GLUtils::loadTextureFromSurface("Caption" + to_string(rand()) + to_string(rand()), surface);
 	SDL_DestroySurface(surface);
 
 
@@ -3423,7 +3423,7 @@ void GLUtils::drawOutlinedString(const string& text, float screenX0, float scree
 
 	filter = GLUtils::FILTER_FBO_NEAREST_NO_MIPMAPPING;
 
-	GLUtils::drawTexture(texture, tx0, tx1, ty0, ty1, x0, x1, y0, y1, 1.0f, filter);
+	GLUtils::drawTexture(texture.get(), tx0, tx1, ty0, ty1, x0, x1, y0, y1, 1.0f, filter);
 
 //#else
 
@@ -4609,7 +4609,7 @@ shared_ptr<BobTexture> GLUtils::getTextureFromPNGAbsolutePath(string filename)//
 
 	int imageWidth = imageSurface->w;
 	int imageHeight = imageSurface->h;
-	bool hasAlpha = imageSurface->format->BytesPerPixel == 4;
+	bool hasAlpha = SDL_BYTESPERPIXEL(imageSurface->format) == 4;
 
 	u8* data = (u8*)imageSurface->pixels;
 #else

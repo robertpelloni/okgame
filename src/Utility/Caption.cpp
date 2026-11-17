@@ -238,7 +238,7 @@ void Caption::initTTF(Engine* g, Position fixedPosition, float screenX, float sc
 	}
 
 	if (textBGColor == nullptr)textBGColor = BobColor::clear;
-	setTextColor(textColor, textAAColor, textBGColor);
+	setTextColor(textColor, &textAAColor, textBGColor);
 
 
 	
@@ -303,8 +303,8 @@ void Caption::initTTF(Engine* g, Position fixedPosition, float screenX, float sc
 		outlineBobColor.darker();
 		outlineBobColor.darker();
 		SDL_Color outlineColor = { (Uint8)outlineBobColor.ri() ,(Uint8)outlineBobColor.gi(),(Uint8)outlineBobColor.bi(),(Uint8)outlineBobColor.ai() };
-		surface = TTF_RenderText_Blended(outlineFont, this->text.c_str(), outlineColor);
-		SDL_Surface *fg_surface = TTF_RenderText_Blended(ttfFont, this->text.c_str(), textSDLColor);
+		surface = TTF_RenderText_Blended(outlineFont, this->text.c_str(), 0, outlineColor);
+		SDL_Surface *fg_surface = TTF_RenderText_Blended(ttfFont, this->text.c_str(), 0, textSDLColor);
 		SDL_Rect rect = { OUTLINE_SIZE, OUTLINE_SIZE, fg_surface->w, fg_surface->h };
 
 		// blit text onto its outline 
@@ -345,8 +345,8 @@ void Caption::initTTF(Engine* g, Position fixedPosition, float screenX, float sc
 		SDL_Color bgSDLColor = { (Uint8)textBGColor->ri() ,(Uint8)textBGColor->gi(),(Uint8)textBGColor->bi(),(Uint8)textBGColor->ai() };
 
 		surface = nullptr;
-		if (textBGColor != BobColor::clear)surface = TTF_RenderText_Shaded(ttfFont, this->text.c_str(), textSDLColor, bgSDLColor);
-		else surface = TTF_RenderText_Blended(ttfFont, this->text.c_str(), textSDLColor);// , bgSDLColor);
+		if (textBGColor != BobColor::clear)surface = TTF_RenderText_Shaded(ttfFont, this->text.c_str(), 0, textSDLColor, bgSDLColor);
+		else surface = TTF_RenderText_Blended(ttfFont, this->text.c_str(), 0, textSDLColor);// , bgSDLColor);
 
 		this->width = surface->w;
 		this->height = surface->h;
@@ -919,7 +919,7 @@ void Caption::render()
 		filter = GLUtils::FILTER_FBO_LINEAR_NO_MIPMAPPING;
 	}
 
-	GLUtils::drawTexture(texture, tx0, tx1, ty0, ty1, x0, x1, y0, y1, alpha, filter);
+	GLUtils::drawTexture(texture.get(), tx0, tx1, ty0, ty1, x0, x1, y0, y1, alpha, filter);
 }
 
 
@@ -1521,7 +1521,7 @@ int Caption::reduceHeightByOne()
 {//=========================================================================================================================
 
 #ifndef ORBIS
-	if (ttfFont == nullptr)return 0;
+	if (font == nullptr)return 0;
 #else
 
 #endif
@@ -1540,7 +1540,7 @@ int Caption::increaseHeightByOne()
 {//=========================================================================================================================
 
 #ifndef ORBIS
-	if (ttfFont == nullptr)return 0;
+	if (font == nullptr)return 0;
 #else
 
 #endif
@@ -1726,8 +1726,8 @@ void Caption::updateScreenXY()
 	//-----------------------------
 	if (fixedPosition == Position::CENTERED_OVER_ENTITY)
 	{
-		Entity *e = entity;
-		if (e == nullptr)e = getPlayer();
+		shared_ptr<Entity> e = entity;
+		if (e == nullptr)e = borrowed<Entity>(getPlayer());
 
 		if(e!=nullptr)
 		{
@@ -1737,10 +1737,10 @@ void Caption::updateScreenXY()
 			int captionOverHeadOffset = 0;
 			for (int i = getCaptionManager()->captionList->size() - 1; i >= 0; i--)
 			{
-				Caption* tempC = getCaptionManager()->captionList->get(i);
+				shared_ptr<Caption> tempC = getCaptionManager()->captionList->get(i);
 				if (tempC->fixedPosition == Position::CENTERED_OVER_ENTITY)
 				{
-					if (tempC == this)break;
+					if (tempC.get() == this)break;
 
 					captionOverHeadOffset += (int)((tempC->height + 2) * tempC->scale);
 				}
@@ -1957,7 +1957,7 @@ void Caption::setEntity(shared_ptr<Entity> e)
 
 	if (e == nullptr && getPlayer() != nullptr)
 	{
-		this->entity = getPlayer();
+		this->entity = borrowed<Entity>(getPlayer());
 	}
 
 	if (this->entity != nullptr)
