@@ -696,14 +696,14 @@ ByteArray* FileUtils::getByteArrayFromIntArray(IntArray*intArray)
 void FileUtils::ltrim(std::string s) 
 {//=========================================================================================================================
 	s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-		std::not1(std::ptr_fun<int, int>(std::isspace))));
+		[](unsigned char c) { return !std::isspace(c); }));
 }
 //=========================================================================================================================
 // trim from end (in place)
 void FileUtils::rtrim(std::string s) 
 {//=========================================================================================================================
 	s.erase(std::find_if(s.rbegin(), s.rend(),
-		std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+		[](unsigned char c) { return !std::isspace(c); }).base(), s.end());
 }//=========================================================================================================================
 
 // trim from both ends (in place)
@@ -1065,18 +1065,12 @@ static inline bool is_base64(u8 c) {
 }
 
 
-#include "base64.h"
 
 //=========================================================================================================================
 std::string FileUtils::encodeByteArrayToBase64StringAlt(u8 const* bytes_to_encode, unsigned long in_len)
 {//=========================================================================================================================
 
-	char* out = new char[in_len];
-	Base64::Encode((char*)bytes_to_encode, in_len, out, in_len);
-
-	string outs(out, in_len);
-
-	return outs;
+	return encodeByteArrayToBase64String(bytes_to_encode, in_len);
 }
 
 
@@ -1085,20 +1079,7 @@ std::string FileUtils::encodeByteArrayToBase64StringAlt(u8 const* bytes_to_encod
 ByteArray* FileUtils::decodeBase64StringToByteArrayAlt(std::string const& encoded_string)//, unsigned long &returnLength)
 {//=========================================================================================================================
 
-	{
-		string outs;
-		string in(encoded_string);
-		Base64::Decode(in, &outs);
-
-
-		ByteArray* outv = new ByteArray(outs.length());
-		for (int i = 0; i < outs.length(); i++)
-		{
-			outv->data()[i]=(outs[i]);
-
-		}
-		return outv;
-	}
+	return decodeBase64StringToByteArray(encoded_string);
 
 //	{
 //		istringstream istr(encoded_string);
@@ -1343,7 +1324,7 @@ ByteArray* FileUtils::decodeBase64StringToByteArray(std::string const& encoded_s
 //}
 
 
-#include "lz4-1.7.5/lib/lz4.h"
+#include "lz4-java/src/lz4/lib/lz4.h"
 
 // ===============================================================================================
 
@@ -1451,7 +1432,7 @@ u8* FileUtils::unlz4Base64StringToByteArray(const string &zippedBytesAsBase64Str
 
 
 
-#include "miniz-master/miniz.c"
+#include "miniz/miniz.h"
 typedef u8 uint8;
 typedef unsigned short uint16;
 typedef unsigned int uint;
@@ -1863,12 +1844,12 @@ string FileUtils::getFileMD5Checksum(const string& filename)
 
 }
 
-#include "md5.h"
+
 
 string FileUtils::getByteArrayMD5Checksum(ByteArray* bytes)
 { //===============================================================================================
 
-	return md5(bytes->data(), bytes->size());
+	Poco::MD5Engine md5Engine; md5Engine.update(bytes->data(), bytes->size()); return Poco::DigestEngine::digestToHex(md5Engine.digest());
 
 	//std::stringstream stringStream((char*)bytes);
 	//return getStringMD5(stringStream.str());
@@ -1878,7 +1859,7 @@ string FileUtils::getByteArrayMD5Checksum(ByteArray* bytes)
 string FileUtils::getStringMD5(const string& stringToMD5)
 { //===============================================================================================
 
-	return md5(stringToMD5);
+	Poco::MD5Engine md5Engine; md5Engine.update(stringToMD5); return Poco::DigestEngine::digestToHex(md5Engine.digest());
 
 //	Poco::MD5Engine md5;
 //	Poco::DigestOutputStream outstr(md5);
@@ -1890,8 +1871,8 @@ string FileUtils::getStringMD5(const string& stringToMD5)
 }
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <lib/stb_image.h>
-#include <lib/stb_image_write.h>
+#include "stb/stb_image.h"
+#include "stb/stb_image_write.h"
 //TODO: 
 void FileUtils::saveImage(const string& s, BufferedImage* i)
 { //===============================================================================================
@@ -2077,7 +2058,7 @@ void FileUtils::deleteStatusText()
 	      statusConsoleText->ticks = 1; //will be deleted from the console after 1 tick
 	
 	      //Java to C++ Converter converted the original 'null' assignment to a call to 'delete', but you should review memory allocation of all pointer variables in the converted code:
-	      delete statusConsoleText;
+	      statusConsoleText = nullptr;
 	
 #ifndef ORBIS
 	      glClear(GL_COLOR_BUFFER_BIT);
@@ -2578,7 +2559,7 @@ void FileUtils::downloadSmallFileToCacheIfNotExist(const string& fileName)
 			//int contentlen = (int)response.getContentLength();
 
 			FileStream fs(cacheDir + fileName, ios::out | ios::trunc | ios::binary);
-			std::auto_ptr<std::istream> pStr(URIStreamOpener::defaultOpener().open(zipuri));
+			std::unique_ptr<std::istream> pStr(URIStreamOpener::defaultOpener().open(zipuri));
 			StreamCopier::copyStream(*pStr.get(), fs);
 			fs.close();
 		}
@@ -2684,8 +2665,10 @@ void FileUtils::writeDidIntroFile()
 
 
 
+#ifdef ORBIS
 #include <fios2/fios2_api.h>
 #include "sys/dirent.h"
+#endif
 
 //this is the current working dir i.e. bobsgame/
 string FileUtils::getWorkingDir()
@@ -2898,7 +2881,7 @@ vector<string> BobFile::list()
 {
 #ifndef ORBIS
 	File f(path);
-	return f.list();
+	vector<string> names; f.list(names); return names;
 #else
 
 	vector<string> files;
@@ -2999,7 +2982,6 @@ When using the reserve function, size will be 0 until you add an element to the 
 Think of myVec as an empty vector which can have new items appended to it using push_back with no overhead for the first numberOfElementsToStart elements.
 
 */
-
 
 
 

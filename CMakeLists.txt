@@ -91,7 +91,12 @@ add_subdirectory(lib/boost)
 #
 #)
 
+# miniz 3.x requires a generated miniz_export.h; it is compiled statically into the
+# executable, so all export/import macros are empty.
+file(WRITE ${CMAKE_BINARY_DIR}/miniz_export.h "#pragma once\n#define MINIZ_EXPORT\n#define MINIZ_IMPORT\n#define MINIZ_NO_EXPORT\n#define MINIZ_DEPRECATED\n#define MINIZ_DEPRECATED_EXPORT MINIZ_EXPORT\n#define MINIZ_DEPRECATED_NO_EXPORT MINIZ_NO_EXPORT\n")
+
 set(BOBSGAME_INCLUDE_DIRS
+        ${CMAKE_BINARY_DIR}
         #${OPENGL_INCLUDE_DIR}
         ${bobsgame_SOURCE_DIR}/lib/SDL/include
         ${bobsgame_SOURCE_DIR}/lib/SDL_image/include

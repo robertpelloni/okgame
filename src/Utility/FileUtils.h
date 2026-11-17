@@ -140,7 +140,7 @@ public:
 	//static void writeBrowserSessionAndRefreshIFrame();
 
 	string downloadingDataNiceName = "";
-	ConsoleText* statusConsoleText = nullptr;
+	shared_ptr<ConsoleText> statusConsoleText = nullptr;
 	long long downloadingFileSize = 0;
 
 	void setStatusText(const string& text);
