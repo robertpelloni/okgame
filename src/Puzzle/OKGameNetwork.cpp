@@ -1,6 +1,8 @@
 
 
 #include "stdafx.h"
+#include "src/Engine/network/OKNet.h"
+#include "src/Utility/SteamManager.h"
 
 //------------------------------------------------------------------------------
 //Copyright Robert Pelloni.
@@ -440,7 +442,7 @@ bool OKGame::udpPeerMessageReceived(sp<UDPPeerConnection>c, string s)
 					string name = "Network player " + to_string(players->size());
 					string userName = p->peerConnection->getUserName();
 					if (userName != "")name = userName;
-					p->nameCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, name, 16, true, OKMenu::menuColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
+					p->nameCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, name, 16, true, BobMenu::menuColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 
 					getAudioManager()->playSound("ready");
 
@@ -545,7 +547,7 @@ bool OKGame::udpPeerMessageReceived(sp<UDPPeerConnection>c, string s)
 			if (OKString::startsWith(command, lobbyCommand_CANCELGAME))
 			{
 
-				getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_SCREEN,0, 0, 5000, "Game was cancelled by host.", 24, true, OKColor::lightRed, OKColor::clear, RenderOrder::OVER_GUI);
+				getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_SCREEN,0, 0, 5000, "Game was cancelled by host.", 24, true, BobColor::lightRed, BobColor::clear, RenderOrder::OVER_GUI);
 
 				OKNet::myStatus = OKNet::status_AVAILABLE;
 
@@ -814,11 +816,11 @@ void OKGame::networkMultiplayerLobbyMenuUpdate()
 
 	if (networkMultiplayerLobbyMenu == nullptr)
 	{
-		if (statusLabel == nullptr)statusLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, 0, -1, " ", 16, true, OKMenu::statusColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
-		if (errorLabel == nullptr)errorLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, 0, -1, " ", 16, true, OKMenu::errorColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
-		//if (onlineFriendsLabel == nullptr)onlineFriendsLabel = getCaptionManager()->newManagedCaption(0, 0, -1, "Online Friends:", oswald_16, OKMenu::menuColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
+		if (statusLabel == nullptr)statusLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, 0, -1, " ", 16, true, BobMenu::statusColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
+		if (errorLabel == nullptr)errorLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, 0, -1, " ", 16, true, BobMenu::errorColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
+		//if (onlineFriendsLabel == nullptr)onlineFriendsLabel = getCaptionManager()->newManagedCaption(0, 0, -1, "Online Friends:", oswald_16, BobMenu::menuColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 
-		networkMultiplayerLobbyMenu = ms<OKMenu>(this, "Network Multiplayer Lobby");
+		networkMultiplayerLobbyMenu = ms<OKMenu>(shared_from_this(), "Network Multiplayer Lobby");
 		networkMultiplayerLobbyMenu->center = false;
 		//networkMultiplayerLobbyMenu->font = oswald_12;
 
@@ -859,7 +861,7 @@ void OKGame::networkMultiplayerLobbyMenuUpdate()
 
 	if(yourStatsMenu == nullptr)
 	{
-		yourStatsMenu = ms<OKMenu>(this, "", "Your Stats");
+		yourStatsMenu = ms<OKMenu>(shared_from_this(), "", "Your Stats");
 		yourStatsMenu->center = false;
 		yourStatsMenu->setFontSize(14);
 		yourStatsMenu->outline = false;
@@ -873,7 +875,7 @@ void OKGame::networkMultiplayerLobbyMenuUpdate()
 	}
 	if(leaderBoardMenu == nullptr)
 	{
-		leaderBoardMenu = ms<OKMenu>(this, "", "High Scores");
+		leaderBoardMenu = ms<OKMenu>(shared_from_this(), "", "High Scores");
 		leaderBoardMenu->center = false;
 		leaderBoardMenu->setFontSize(14);
 		leaderBoardMenu->outline = false;
@@ -1012,7 +1014,7 @@ void OKGame::networkMultiplayerLobbyMenuUpdate()
 	//show friends online list
 	if (friendsOnlineMenu == nullptr)
 	{
-		friendsOnlineMenu = ms<OKMenu>(this, "", "Friends Online:");
+		friendsOnlineMenu = ms<OKMenu>(shared_from_this(), "", "Friends Online:");
 		friendsOnlineMenu->setFontSize(12);
 		friendsOnlineMenu->center = false;
 		friendsOnlineMenu->outline = false;
@@ -1021,7 +1023,7 @@ void OKGame::networkMultiplayerLobbyMenuUpdate()
 
 	if (roomsMenu == nullptr)
 	{
-		roomsMenu = ms<OKMenu>(this, "");
+		roomsMenu = ms<OKMenu>(shared_from_this(), "");
 		roomsMenu->setFontSize(14);
 		roomsMenu->center = false;
 		populateRoomsMenu();
@@ -1526,7 +1528,7 @@ void OKGame::networkMultiplayerLobbyMenuUpdate()
 								errorLabel->setText("No Steam friends found or Steam not running.");
 							} else {
 								for(auto& f : steamFriends) {
-									getServerConnection()->doAddFriendByUsername(statusLabel, errorLabel, f.second);
+									getServerConnection()->doAddFriendByUsername(statusLabel.get(), errorLabel.get(), f.second);
 								}
 								statusLabel->setText("Attempted to add " + to_string(steamFriends.size()) + " Steam friends.");
 							}
@@ -1580,7 +1582,7 @@ void OKGame::networkMultiplayerLobbyMenuUpdate()
 								string prefix = friendUserName.substr(0, friendUserName.find("`"));
 								friendUserName = prefix + friendUserName.substr(friendUserName.find("`") + 1);
 							}
-							getServerConnection()->doAddFriendByUsername(statusLabel, errorLabel, friendUserName);
+							getServerConnection()->doAddFriendByUsername(statusLabel.get(), errorLabel.get(), friendUserName);
 						}
 
 						if (networkMultiplayerLobbyMenu->isSelectedID("Join room", clicked, mx, my))
@@ -1772,16 +1774,34 @@ void OKGame::networkMultiplayerLobbyMenuRender()
 	{
 		tournamentBracketMenu->render(startHeight, rightX + 50, getHeight(), true);
 	}
+
+	if (selectGameSequenceOrSingleGameTypeFilterMenuShowing && selectGameSequenceOrSingleGameTypeMenu != nullptr)
+	{
+		sp<Caption>c = networkMultiplayerLobbyMenu->getCaptionByID(FilterByGameSequenceOrTypeRooms);
+		selectGameSequenceOrSingleGameTypeMenu->render(c->screenY + c->getHeight() + 8, c->screenX + c->getWidth() / 2, GLUtils::getViewportHeight(), true, nullptr, nullptr, true);
+	}
+
+	if (selectGameSequenceFilterMenuShowing && selectGameSequenceMenu != nullptr)
+	{
+		sp<Caption>c = networkMultiplayerLobbyMenu->getCaptionByID(FilterByGameSequenceOrTypeRooms);
+		selectGameSequenceMenu->render(c->screenY + c->getHeight() + 8, c->screenX + c->getWidth() / 2, GLUtils::getViewportHeight(), true, nullptr, nullptr, true);
+	}
+
+	if (selectSingleGameTypeFilterMenuShowing && selectSingleGameTypeMenu != nullptr)
+	{
+		sp<Caption>c = networkMultiplayerLobbyMenu->getCaptionByID(FilterByGameSequenceOrTypeRooms);
+		selectSingleGameTypeMenu->render(c->screenY + c->getHeight() + 8, c->screenX + c->getWidth() / 2, GLUtils::getViewportHeight(), true, nullptr, nullptr, true);
+	}
 	}
 
 	void OKGame::getTournamentBracketFromServer() {
 	if (currentRoom == nullptr) return;
-	getServerConnection()->writeCompressed(BobNet.Bobs_Game_GetTournamentBracketRequest + currentRoom->uuid + BobNet.endline);
+	getServerConnection()->write_S(BobNet::Bobs_Game_GetTournamentBracketRequest + currentRoom->uuid + BobNet::endline);
 	}
 
 	void OKGame::tournamentBracketMenuUpdate() {
 	if (tournamentBracketMenu == nullptr) {
-		tournamentBracketMenu = ms<OKMenu>(this, "", "Tournament Bracket");
+		tournamentBracketMenu = ms<OKMenu>(shared_from_this(), "", "Tournament Bracket");
 	}
 
 	string bracketData = getServerConnection()->getAndResetBobsGameGetTournamentBracketResponse_S();
@@ -1888,8 +1908,8 @@ void OKGame::networkMultiplayerLobbyMenuRender()
 			string p1Name = (m.player1ID != -1) ? "Player " + to_string(m.player1ID) : "TBD";
 			string p2Name = (m.player2ID != -1) ? "Player " + to_string(m.player2ID) : "TBD";
 
-			GLUtils::drawOutlinedString(p1Name, x + 5, y + 5, OKColor::white);
-			GLUtils::drawOutlinedString(p2Name, x + 5, y + h / 2 + 5, OKColor::white);
+			GLUtils::drawOutlinedString(p1Name, x + 5, y + 5, BobColor::white);
+			GLUtils::drawOutlinedString(p2Name, x + 5, y + h / 2 + 5, BobColor::white);
 
 			if (m.winnerID != -1) {
 				float winnerY = (m.winnerID == m.player1ID) ? y + 5 : y + h / 2 + 5;
@@ -1906,23 +1926,6 @@ void OKGame::networkMultiplayerLobbyMenuRender()
 				}
 			}
 		}
-	}	if (selectGameSequenceOrSingleGameTypeFilterMenuShowing && selectGameSequenceOrSingleGameTypeMenu != nullptr)
-	{
-		sp<Caption>c = networkMultiplayerLobbyMenu->getCaptionByID(FilterByGameSequenceOrTypeRooms);
-		selectGameSequenceOrSingleGameTypeMenu->render(c->screenY + c->getHeight() + 8, c->screenX + c->getWidth() / 2, GLUtils::getViewportHeight(), true, nullptr, nullptr, true);
-	}
-
-	if (selectGameSequenceFilterMenuShowing && selectGameSequenceMenu != nullptr)
-	{
-		sp<Caption>c = networkMultiplayerLobbyMenu->getCaptionByID(FilterByGameSequenceOrTypeRooms);
-		selectGameSequenceMenu->render(c->screenY + c->getHeight() + 8, c->screenX + c->getWidth() / 2, GLUtils::getViewportHeight(), true, nullptr, nullptr, true);
-	}
-
-	if (selectSingleGameTypeFilterMenuShowing && selectSingleGameTypeMenu != nullptr)
-	{
-		sp<Caption>c = networkMultiplayerLobbyMenu->getCaptionByID(FilterByGameSequenceOrTypeRooms);
-		selectSingleGameTypeMenu->render(c->screenY + c->getHeight() + 8, c->screenX + c->getWidth() / 2, GLUtils::getViewportHeight(), true, nullptr, nullptr, true);
-	}
 }
 
 
@@ -1932,7 +1935,7 @@ void OKGame::selectGameSequenceOrSingleGameTypeFilterMenuUpdate()
 
 	if (selectGameSequenceOrSingleGameTypeMenu == nullptr)
 	{
-		selectGameSequenceOrSingleGameTypeMenu = ms<OKMenu>(this, "");
+		selectGameSequenceOrSingleGameTypeMenu = ms<OKMenu>(shared_from_this(), "");
 		selectGameSequenceOrSingleGameTypeMenu->add("None");
 		selectGameSequenceOrSingleGameTypeMenu->add("Select Game Sequence");
 		selectGameSequenceOrSingleGameTypeMenu->add("Select Single Game Type");
@@ -1997,7 +2000,7 @@ void OKGame::selectGameSequenceFilterMenuUpdate()
 
 	if (selectGameSequenceMenu == nullptr)
 	{
-		selectGameSequenceMenu = ms<OKMenu>(this, "");
+		selectGameSequenceMenu = ms<OKMenu>(shared_from_this(), "");
 		selectGameSequenceMenu->center = false;
 		selectGameSequenceMenu->outline = false;
 
@@ -2056,7 +2059,7 @@ void OKGame::selectSingleGameTypeFilterMenuUpdate()
 
 	if (selectSingleGameTypeMenu == nullptr)
 	{
-		selectSingleGameTypeMenu = ms<OKMenu>(this, "");
+		selectSingleGameTypeMenu = ms<OKMenu>(shared_from_this(), "");
 		selectSingleGameTypeMenu->center = false;
 		selectSingleGameTypeMenu->setFontSize(14);
 		selectSingleGameTypeMenu->outline = false;
@@ -2186,10 +2189,10 @@ void OKGame::networkMultiplayerPlayerJoinMenuUpdate()
 
 	if (networkMultiplayerPlayerJoinMenu == nullptr)
 	{
-		if (statusLabel == nullptr)statusLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, 0, -1, " ", 16, true, OKMenu::statusColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
-		if (errorLabel == nullptr)errorLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, 0, -1, " ", 16, true, OKMenu::errorColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
+		if (statusLabel == nullptr)statusLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, 0, -1, " ", 16, true, BobMenu::statusColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
+		if (errorLabel == nullptr)errorLabel = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, 0, -1, " ", 16, true, BobMenu::errorColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 
-		networkMultiplayerPlayerJoinMenu = ms<OKMenu>(this, "Network Multiplayer Room");
+		networkMultiplayerPlayerJoinMenu = ms<OKMenu>(shared_from_this(), "Network Multiplayer Room");
 		networkMultiplayerPlayerJoinMenu->setFontSize(12);
 		networkMultiplayerPlayerJoinMenu->addInfo("Press the Space key or A on your controller to join. Multiple local players are allowed.");
 		networkMultiplayerPlayerJoinMenu->addInfo("Press Esc or Select on your controller to return to lobby.");
@@ -2201,7 +2204,7 @@ void OKGame::networkMultiplayerPlayerJoinMenuUpdate()
 	if (networkMultiplayerRoomRulesMenu == nullptr)
 	{
 		//show room options
-		networkMultiplayerRoomRulesMenu = ms<OKMenu>(this, "");
+		networkMultiplayerRoomRulesMenu = ms<OKMenu>(shared_from_this(), "");
 		networkMultiplayerRoomRulesMenu->setFontSize(12);
 		networkMultiplayerRoomRulesMenu->center = false;
 
@@ -2281,7 +2284,7 @@ void OKGame::networkMultiplayerPlayerJoinMenuUpdate()
 
 			if (networkMultiplayerJoinedPeersMenu == nullptr)
 			{
-				networkMultiplayerJoinedPeersMenu = ms<OKMenu>(this, "");
+				networkMultiplayerJoinedPeersMenu = ms<OKMenu>(shared_from_this(), "");
 				networkMultiplayerJoinedPeersMenu->setFontSize(12);
 				networkMultiplayerJoinedPeersMenu->center = false;
 			}
@@ -2402,8 +2405,8 @@ void OKGame::networkMultiplayerPlayerJoinMenuUpdate()
 							tellAllPeersThatPlayerHasConfirmedAndSendGameSequence(p);
 							p->confirmed = true;
 
-							p->gameCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, p->gameLogic->currentGameSequence->name, 12, true, OKMenu::menuColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
-							p->difficultyCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, p->gameLogic->currentGameSequence->currentDifficultyName, 12, true, OKMenu::menuColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
+							p->gameCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, p->gameLogic->currentGameSequence->name, 12, true, BobMenu::menuColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
+							p->difficultyCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, p->gameLogic->currentGameSequence->currentDifficultyName, 12, true, BobMenu::menuColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 
 						}
 			}
@@ -2457,7 +2460,7 @@ void OKGame::networkMultiplayerPlayerJoinMenuUpdate()
 					{
 						players->push_back(p);
 					}
-					p->nameCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, "Local (Keyboard)", 12, true, OKMenu::menuColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
+					p->nameCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, "Local (Keyboard)", 12, true, BobMenu::menuColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 
 					tellAllJoinedPeersOneOfMyPlayersHasJoinedTheLobby(p);
 				}
@@ -2484,7 +2487,7 @@ void OKGame::networkMultiplayerPlayerJoinMenuUpdate()
 
 	for (int controllerNum = 0; controllerNum < getControlsManager()->gameControllers->size(); controllerNum++)
 	{
-		sp<GameController>g = getControlsManager()->gameControllers->at(controllerNum);
+		sp<GameController> g = borrowed<GameController>(getControlsManager()->gameControllers->at(controllerNum));
 
 		if (g->a_Pressed())
 		{
@@ -2514,13 +2517,13 @@ void OKGame::networkMultiplayerPlayerJoinMenuUpdate()
 					for (int i = 0; i < players->size(); i++)
 					{
 						sp<PuzzlePlayer>p = players->at(i);
-						if (p->gameController == g)alreadyInUse = true;
+						if (p->gameController == g.get())alreadyInUse = true;
 					}
 
 					if (!alreadyInUse)
 					{
 						sp<PuzzlePlayer>p = ms<PuzzlePlayer>(ms<GameLogic>(this, -1));
-						p->gameController = g;
+						p->gameController = g.get();
 						if (players->size()>0)
 						{
 							//always add local player on the left side, to the right of any existing local players
@@ -2532,7 +2535,7 @@ void OKGame::networkMultiplayerPlayerJoinMenuUpdate()
 						{
 							players->push_back(p);
 						}
-						p->nameCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, "Local (Controller " + to_string(controllerNum) + ")", 12, true, OKMenu::menuColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
+						p->nameCaption = getCaptionManager()->newManagedCaption(Caption::Position::NONE, 0, 0, -1, "Local (Controller " + to_string(controllerNum) + ")", 12, true, BobMenu::menuColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 
 						tellAllJoinedPeersOneOfMyPlayersHasJoinedTheLobby(p);
 					}
@@ -2545,7 +2548,7 @@ void OKGame::networkMultiplayerPlayerJoinMenuUpdate()
 			for (int i = 0; i < players->size(); i++)
 			{
 				sp<PuzzlePlayer>p = players->at(i);
-				if (p->gameController == g)
+				if (p->gameController == g.get())
 				{
 					tellAllJoinedPeersOneOfMyPlayersHasLeftTheLobby(p);
 					
@@ -2565,8 +2568,8 @@ void OKGame::networkMultiplayerPlayerJoinMenuUpdate()
 		//are you sure?  this will disconnect everyone from your game
 		sp<Caption>c = nullptr;
 
-		if (hosting)c = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_SCREEN, 0, 0, -1, "Are you sure you want to cancel the game?  Press Space or Start to stay, Esc or Select again to cancel and quit.", 16, true, OKMenu::errorColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
-		else c = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_SCREEN, 0, 0, -1, "Are you sure you want to leave the game?  Press Space or Start to stay, Esc or Select again to cancel and quit.", 16, true, OKMenu::errorColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
+		if (hosting)c = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_SCREEN, 0, 0, -1, "Are you sure you want to cancel the game?  Press Space or Start to stay, Esc or Select again to cancel and quit.", 16, true, BobMenu::errorColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
+		else c = getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_SCREEN, 0, 0, -1, "Are you sure you want to leave the game?  Press Space or Start to stay, Esc or Select again to cancel and quit.", 16, true, BobMenu::errorColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 		bool quit = false;
 		bool goback = false;
 		while (quit == false && goback == false)
@@ -2613,7 +2616,7 @@ void OKGame::networkMultiplayerPlayerJoinMenuUpdate()
 			{
 				if (networkMultiplayerPlayerJoinMenuPressStartCaption == nullptr)
 					networkMultiplayerPlayerJoinMenuPressStartCaption = 
-						getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, (int)(getHeight() - 50), -1, "Press the Enter key or Start on your controller to start game.", 16, true, OKMenu::menuColor, OKMenu::clearColor, RenderOrder::OVER_GUI);
+						getCaptionManager()->newManagedCaption(Caption::Position::CENTERED_X, 0, (int)(getHeight() - 50), -1, "Press the Enter key or Start on your controller to start game.", 16, true, BobMenu::menuColor, BobMenu::clearColor, RenderOrder::OVER_GUI);
 				networkMultiplayerPlayerJoinMenuPressStartCaption->flashing = true;
 				networkMultiplayerPlayerJoinMenuPressStartCaption->flashingTicksPerFlash = 1000;
 
@@ -2747,7 +2750,7 @@ void OKGame::networkMultiplayerPlayerJoinMenuRender()
 				sy0 = (float)((int)(bottomY + 20));
 				sy1 = sy0 + (float)((int)(t->getImageHeight() * ratio));
 
-				GLUtils::drawTexture(t, tx0, tx1, ty0, ty1, sx0, sx1, sy0, sy1, 1.0f, GLUtils::FILTER_NEAREST);
+				GLUtils::drawTexture(t->getTextureID(), tx0, tx1, ty0, ty1, sx0, sx1, sy0, sy1, 1.0f, GLUtils::FILTER_NEAREST);
 			}
 
 			float x = (float)((int)sx0);

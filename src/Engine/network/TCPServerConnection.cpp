@@ -1587,6 +1587,16 @@ void TCPServerConnection::sendBobsGameRoomListRequest_S()
 	connectAndAuthorizeAndQueueWriteToChannel_S(BobNet::Bobs_Game_RoomList_Request + BobNet::endline);
 }
 
+void TCPServerConnection::sendOKGameRoomListRequest_S()
+{
+	sendBobsGameRoomListRequest_S();
+}
+
+string TCPServerConnection::getAndResetOKGameRoomListResponse_S()
+{
+	return getAndResetBobsGameRoomListResponse_S();
+}
+
 //===============================================================================================
 void TCPServerConnection::incomingBobsGameRoomListResponse(string &s)
 { //=========================================================================================================================
@@ -1623,6 +1633,31 @@ void TCPServerConnection::incomingBobsGameGetTournamentBracketResponse(string &s
 void TCPServerConnection::tellBobsGameRoomHostMyUserID_S(const string& roomUUID)
 {//===============================================================================================
 	connectAndAuthorizeAndQueueWriteToChannel_S(BobNet::Bobs_Game_TellRoomHostToAddMyUserID+roomUUID +":"+ BobNet::endline);
+}
+
+void TCPServerConnection::tellOKGameRoomHostMyUserID_S(const string& roomUUID)
+{
+	tellBobsGameRoomHostMyUserID_S(roomUUID);
+}
+
+void TCPServerConnection::tellServerOKGameHostingPublicGameUpdate_S(const string& roomDescription)
+{
+	tellServerBobsGameHostingPublicGameUpdate_S(roomDescription);
+}
+
+void TCPServerConnection::tellServerOKGameIHaveCanceledTheGame_S(const string& roomUUID)
+{
+	tellServerBobsGameIHaveCanceledTheGame_S(roomUUID);
+}
+
+void TCPServerConnection::tellServerOKGameIHaveStartedTheGame_S(const string& roomUUID)
+{
+	tellServerBobsGameIHaveStartedTheGame_S(roomUUID);
+}
+
+void TCPServerConnection::tellServerOKGameTheGameHasEnded_S(const string& roomUUID, const string& results)
+{
+	tellServerBobsGameTheGameHasEnded_S(roomUUID, results);
 }
 
 //===============================================================================================

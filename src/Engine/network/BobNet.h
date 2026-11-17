@@ -510,6 +510,7 @@ public:
 	static const string Bobs_Game_GameTypesAndSequences_Vote_Response;
 
 	static const string Bobs_Game_RoomList_Request;
+	static const string Bobs_Game_GetTournamentBracketRequest;
 	static const string Bobs_Game_RoomList_Response;
 	static const string Bobs_Game_TellRoomHostToAddMyUserID;
 	static const string Bobs_Game_NewRoomCreatedUpdate;

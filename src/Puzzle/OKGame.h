@@ -299,6 +299,7 @@ public:
 	void tournamentBracketMenuUpdate();
 	void tournamentBracketMenuRender();
 	void getTournamentBracketFromServer();
+	void parseTournamentData(string s);
 	//sp<UDPPeerConnection>hostPeer = nullptr;
 	sp<vector<sp<UDPPeerConnection>>>joinedPeers;// = ms<vector><sp<UDPPeerConnection>>();
 	bool hostStartedGame = false;

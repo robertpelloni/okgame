@@ -873,10 +873,18 @@ public:
 
 
 	void sendBobsGameRoomListRequest_S();
+	void sendOKGameRoomListRequest_S();
+	string getAndResetOKGameRoomListResponse_S();
 	void incomingBobsGameRoomListResponse(string &s);
 	void incomingBobsGameNewRoomCreatedUpdate(string &s);
 	void incomingBobsGameGetTournamentBracketResponse(string &s);
 	void tellBobsGameRoomHostMyUserID_S(const string& roomUUID);
+	// OKGame fork spellings (forward to the BobsGame implementations).
+	void tellOKGameRoomHostMyUserID_S(const string& roomUUID);
+	void tellServerOKGameHostingPublicGameUpdate_S(const string& roomDescription);
+	void tellServerOKGameIHaveCanceledTheGame_S(const string& roomUUID);
+	void tellServerOKGameIHaveStartedTheGame_S(const string& roomUUID);
+	void tellServerOKGameTheGameHasEnded_S(const string& roomUUID, const string& results);
 	void tellServerBobsGameHostingPublicGameUpdate_S(const string& roomDescription);
 	void tellServerBobsGameIHaveCanceledTheGame_S(const string& roomUUID);
 	void tellServerBobsGameIHaveStartedTheGame_S(const string& roomUUID);
