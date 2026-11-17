@@ -29,7 +29,7 @@ AudioFile::AudioFile(AudioData* data)
 			return;
 		}
 	}
-	AudioManager::globalAudioFileList.add(this);
+	AudioManager::globalAudioFileList.add(borrowed<AudioFile>(this));
 }
 
 
@@ -61,7 +61,7 @@ AudioFile::AudioFile(string filename)
 	_fileExists = true;
 	setInitialized_S(true);
 
-	AudioManager::globalAudioFileList.add(this);
+	AudioManager::globalAudioFileList.add(borrowed<AudioFile>(this));
 
 	log.info("Loaded " + filename);
 

@@ -11,7 +11,7 @@
 
 
 #ifndef ORBIS
-#include "SDL_mixer.h"
+#include "SDL3_mixer/SDL_mixer.h"
 #else
 #endif
 #if HAVE_PROJECTM
@@ -111,7 +111,7 @@ void AudioManager::initAudioLibrary()
 			spec.freq = 44100;
 			spec.format = SDL_AUDIO_S16;
 			spec.channels = 2;
-			mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_OUTPUT, &spec);
+			mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec);
 			if (!mixer)
 			{
 				log.error("MIX_CreateMixerDevice failed: " + string(SDL_GetError()));
