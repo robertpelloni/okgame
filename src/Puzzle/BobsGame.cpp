@@ -250,39 +250,6 @@ void BobsGame::init()
 
 }
 
-void BobsGame::update() {
-	super::update();
-
-	LuaManager::update();
-
-	if (networkGame) {
-		frameCount++;
-		if (frameCount % 5 == 0) { // 12Hz sync
-			Main::networkManager->sendFrame(getPlayer1Game()->getState());
-		}
-		if (opponentGame) {
-			opponentGame->update(1, 2);
-		}
-
-		shared_ptr<GameLogic> playerGame = getPlayer1Game();
-		if (Main::networkManager != nullptr && playerGame != nullptr && networkScoreReported == false) {
-			if ((playerGame->won || playerGame->lost || playerGame->complete || playerGame->died) && playerGame->timeEnded != 0) {
-				string playerName = getUserName_S();
-				if (playerName == "")playerName = "C++Player";
-
-				int elapsedMs = 0;
-				if (playerGame->timeStarted != 0 && playerGame->timeEnded >= playerGame->timeStarted) {
-					elapsedMs = (int)System::getTicksBetweenTimes(playerGame->timeStarted, playerGame->timeEnded);
-				}
-
-				Main::networkManager->reportScore(networkGameMode, playerName, playerGame->score, playerGame->linesClearedTotal, elapsedMs);
-				networkScoreReported = true;
-				log.info("Reported network score for " + playerName + " in mode " + networkGameMode);
-			}
-		}
-	}
-}
-
 //=========================================================================================================================
 void BobsGame::initPlayer()
 {//=========================================================================================================================
@@ -718,11 +685,13 @@ void BobsGame::render()
 			//clear the shader bg
 			GLUtils::fillBufferWithBlack();
 
+#if HAVE_PROJECTM
             if (visualizer && Main::globalSettings->bobsGame_enableVisualizer)
             {
                 visualizer->SetWindowSize(getWidth(), getHeight());
                 visualizer->RenderFrame();
             }
+#endif
 
 			long long startTime = timeRenderBegan;
 			long long currentTime = System::currentHighResTimer();
@@ -1015,7 +984,33 @@ void BobsGame::debugKeys()
 void BobsGame::update()
 {//=========================================================================================================================
 
-	LuaManager::update();
+	// Network frame sync / score reporting (merged from the duplicate update definition).
+	if (networkGame) {
+		frameCount++;
+		if (frameCount % 5 == 0) { // 12Hz sync
+			Main::networkManager->sendFrame(getPlayer1Game()->getState());
+		}
+		if (opponentGame) {
+			opponentGame->update(1, 2);
+		}
+
+		shared_ptr<GameLogic> playerGame = getPlayer1Game();
+		if (Main::networkManager != nullptr && playerGame != nullptr && networkScoreReported == false) {
+			if ((playerGame->won || playerGame->lost || playerGame->complete || playerGame->died) && playerGame->timeEnded != 0) {
+				string playerName = getUserName_S();
+				if (playerName == "")playerName = "C++Player";
+
+				int elapsedMs = 0;
+				if (playerGame->timeStarted != 0 && playerGame->timeEnded >= playerGame->timeStarted) {
+					elapsedMs = (int)System::getTicksBetweenTimes(playerGame->timeStarted, playerGame->timeEnded);
+				}
+
+				Main::networkManager->reportScore(networkGameMode, playerName, playerGame->score, playerGame->linesClearedTotal, elapsedMs);
+				networkScoreReported = true;
+				log.info("Reported network score for " + playerName + " in mode " + networkGameMode);
+			}
+		}
+	}
 
 	if(networkMultiplayerLobbyMenuShowing || networkMultiplayerPlayerJoinMenuShowing)	{
 		if (music!=nullptr && music->isPlaying() == true)
@@ -2853,7 +2848,7 @@ void BobsGame::updateVersion0ToVersion1()
 			}
 			for (int x = 0; x < b->whenSetTurnAllTouchingBlocksOfFromTypesIntoToTypeAndFadeOut.size(); x++)
 			{
-				shared_ptr<TurnFromBlockTypeToType> t = b->whenSetTurnAllTouchingBlocksOfFromTypesIntoToTypeAndFadeOut.get(x);
+				auto t = b->whenSetTurnAllTouchingBlocksOfFromTypesIntoToTypeAndFadeOut.get(x);
 				if (t->fromType_DEPRECATED != "")
 				{
 					shared_ptr<BlockType> correctBlock = g->getBlockTypeByName(t->fromType_DEPRECATED);

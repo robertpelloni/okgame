@@ -393,7 +393,7 @@ private:
 public:
 	void setGameType(shared_ptr<GameType> gameType);
 	shared_ptr<DifficultyType> getCurrentDifficulty();
-private:
+public:
 	void initGame();
 
 public:
