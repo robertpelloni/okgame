@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "src/Engine/entity/Sprite.h"
 
 //------------------------------------------------------------------------------
 //Copyright Robert Pelloni.
@@ -712,10 +713,10 @@ void Engine::incomingSpriteData(string s)
 
 		if (sprite == nullptr)
 		{
-			sprite = make_shared<Sprite>(this);
+			sprite = make_shared<Sprite>(borrowed<Engine>(this));
 		}
 
-		sprite->initializeWithSpriteData(data);
+		sprite->initializeWithSpriteData(borrowed<SpriteData>(data));
 
 		getSpriteManager()->spriteByNameHashMap.put(sprite->getName(), sprite);
 		getSpriteManager()->spriteByIDHashMap.put(sprite->getID(), sprite);
@@ -749,7 +750,7 @@ void Engine::incomingMapData(string s)
 	{
 		if (getMapManager()->mapByNameHashMap.containsKey(data->getName()) == false)
 		{
-			Map* m = new Map(this, data);
+			shared_ptr<Map> m = make_shared<Map>(this, data);
 			getMapManager()->mapList.add(m);
 			getMapManager()->mapByNameHashMap.put(data->getName(), m);
 			getMapManager()->mapByIDHashMap.put(data->getID(), m);
@@ -807,7 +808,7 @@ void Engine::incomingDialogue(string s)
 	}
 	else
 	{
-		Dialogue* d = getEventManager()->getDialogueByIDCreateIfNotExist(data->getID());
+		shared_ptr<Dialogue> d = getEventManager()->getDialogueByIDCreateIfNotExist(data->getID());
 		d->setData_S(data);
 	}
 }
@@ -861,7 +862,7 @@ void Engine::incomingGameString(string s)
 	}
 	else
 	{
-		GameString* gameString = getEventManager()->getGameStringByIDCreateIfNotExist(data->getID());
+		shared_ptr<GameString> gameString = getEventManager()->getGameStringByIDCreateIfNotExist(data->getID());
 		gameString->setData_S(data);
 	}
 }
@@ -887,7 +888,7 @@ void Engine::incomingFlag(string s)
 	}
 	else
 	{
-		Flag* flag = getEventManager()->getFlagByIDCreateIfNotExist(data->getID());
+		shared_ptr<Flag> flag = getEventManager()->getFlagByIDCreateIfNotExist(data->getID());
 		flag->setData_S(data);
 	}
 }
@@ -913,7 +914,7 @@ void Engine::incomingSkill(string s)
 	}
 	else
 	{
-		Skill* skill = getEventManager()->getSkillByIDCreateIfNotExist(data->getID());
+		shared_ptr<Skill> skill = getEventManager()->getSkillByIDCreateIfNotExist(data->getID());
 		skill->setData_S(data);
 	}
 }
@@ -938,7 +939,7 @@ void Engine::incomingMusic(string s)
 	}
 	else
 	{
-		AudioFile* music = AudioManager::getAudioFileByIDCreateIfNotExist(data->getID());
+		shared_ptr<AudioFile> music = AudioManager::getAudioFileByIDCreateIfNotExist(data->getID());
 		music->setData_S(data);
 	}
 }
@@ -964,7 +965,7 @@ void Engine::incomingSound(string s)
 	}
 	else
 	{
-		AudioFile* sound = AudioManager::getAudioFileByIDCreateIfNotExist(data->getID());
+		shared_ptr<AudioFile> sound = AudioManager::getAudioFileByIDCreateIfNotExist(data->getID());
 		sound->setData_S(data);
 	}
 }
