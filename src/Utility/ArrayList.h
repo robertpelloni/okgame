@@ -112,6 +112,10 @@ public:
 		return v[index];
 	}
 
+	// std::vector-style alias used by the Puzzle/OKGame code after the
+	// shared_ptr refactor switched call sites from get() to at().
+	E at(int index) { return get(index); }
+
 	int indexOf(const E& e) const {
 		auto it = std::find(v.begin(), v.end(), e);
 		if (it != v.end()) {

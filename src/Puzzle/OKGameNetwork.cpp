@@ -1304,14 +1304,14 @@ void OKGame::networkMultiplayerLobbyMenuUpdate()
 					{
 						networkMultiplayerLobbyMenu->up();
 
-						if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+						if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 					}
 
 					if (getControlsManager()->miniGame_DOWN_Pressed())
 					{
 						networkMultiplayerLobbyMenu->down();
 
-						if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+						if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 					}
 
 					if (getControlsManager()->miniGame_RIGHT_Pressed())
@@ -1324,7 +1324,7 @@ void OKGame::networkMultiplayerLobbyMenuUpdate()
 						string num = "";
 						if (filterByMaxPlayers > 1)num = to_string(filterByMaxPlayers);
 
-						if (!textStarted) { SDL_StartTextInput(); getControlsManager()->text = num; textStarted = true; }
+						if (!textStarted) { SDL_StartTextInput(GLUtils::window); getControlsManager()->text = num; textStarted = true; }
 
 						filterByMaxPlayers = -1;
 						int temp = -1;
@@ -1340,14 +1340,14 @@ void OKGame::networkMultiplayerLobbyMenuUpdate()
 					if (roomsMenu->isSelectedID(FilterByKeyword))
 					{
 						chatEnabled = false;
-						if (!textStarted) { SDL_StartTextInput(); getControlsManager()->text = filterByKeyword; textStarted = true; }
+						if (!textStarted) { SDL_StartTextInput(GLUtils::window); getControlsManager()->text = filterByKeyword; textStarted = true; }
 						filterByKeyword = getControlsManager()->text;
 					}
 					else
 					if (networkMultiplayerLobbyMenu->isSelectedID("Add friend by username"))
 					{
 						chatEnabled = false;
-						if (!textStarted) { SDL_StartTextInput(); getControlsManager()->text = friendUserName; textStarted = true; }
+						if (!textStarted) { SDL_StartTextInput(GLUtils::window); getControlsManager()->text = friendUserName; textStarted = true; }
 						friendUserName = getControlsManager()->text;
 
 						while (friendUserName.find("`") != string::npos)
@@ -1361,7 +1361,7 @@ void OKGame::networkMultiplayerLobbyMenuUpdate()
 					else
 					{
 						chatEnabled = true;
-						if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+						if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 					}
 				}
 				else
@@ -1370,7 +1370,7 @@ void OKGame::networkMultiplayerLobbyMenuUpdate()
 					{
 						roomsMenu->up();
 
-						if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+						if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 					}
 
 					if (getControlsManager()->miniGame_DOWN_Pressed())
@@ -1378,7 +1378,7 @@ void OKGame::networkMultiplayerLobbyMenuUpdate()
 
 						roomsMenu->down();
 
-						if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+						if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 					}
 
 					if (getControlsManager()->miniGame_LEFT_Pressed())

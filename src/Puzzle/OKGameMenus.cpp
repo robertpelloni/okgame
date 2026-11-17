@@ -1466,7 +1466,7 @@ void OKGame::loginMenuUpdate()
 
 	if (mx != lastMX || my != lastMY)
 	{
-		if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+		if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 		lastMX = mx;
 		lastMY = my;
 	}
@@ -1475,14 +1475,14 @@ void OKGame::loginMenuUpdate()
 	{
 		loginMenu->up();
 
-		if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+		if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 	}
 
 	if (getControlsManager()->miniGame_DOWN_Pressed() || getControlsManager()->key_TAB_Pressed())
 	{
 		loginMenu->down();
 
-		if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+		if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 	}
 
 	bool confirm = getControlsManager()->miniGame_CONFIRM_Pressed();//, clicked, mx, my
@@ -1502,14 +1502,14 @@ void OKGame::loginMenuUpdate()
 
 	if (loginMenu->isSelectedID("Username or Email"))
 	{
-		if (!textStarted) { SDL_StartTextInput(); getControlsManager()->text = userNameOrEmailText; textStarted = true;}
+		if (!textStarted) { SDL_StartTextInput(GLUtils::window); getControlsManager()->text = userNameOrEmailText; textStarted = true;}
 		userNameOrEmailText = getControlsManager()->text;
 		loginMenu->getMenuItemByID("Username or Email")->setText("Username or Email: " + userNameOrEmailText);
 	}
 	else
 	if (loginMenu->isSelectedID("Password"))
 	{
-		if (!textStarted) { SDL_StartTextInput(); getControlsManager()->text = passwordText; textStarted = true; }
+		if (!textStarted) { SDL_StartTextInput(GLUtils::window); getControlsManager()->text = passwordText; textStarted = true; }
 		passwordText = getControlsManager()->text;
 		passwordStarsText = "";
 		for (int i = 0; i < (int)passwordText.length(); i++)passwordStarsText += "*";
@@ -1517,7 +1517,7 @@ void OKGame::loginMenuUpdate()
 	}
 	else
 	{
-		if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+		if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 	}
 
 	bool leaveMenu = false;
@@ -1572,7 +1572,7 @@ void OKGame::loginMenuUpdate()
 
 		chatEnabled = true;
 
-		if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+		if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 		getControlsManager()->text = "";
 
 		loginMenuShowing = false;
@@ -1661,7 +1661,7 @@ void OKGame::createAccountMenuUpdate()
 
 	if(mx!=lastMX || my !=lastMY)
 	{
-		if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+		if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 		lastMX = mx;
 		lastMY = my;
 	}
@@ -1670,33 +1670,33 @@ void OKGame::createAccountMenuUpdate()
 	{
 		createAccountMenu->up();
 
-		if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+		if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 	}
 
 	if (getControlsManager()->miniGame_DOWN_Pressed() || getControlsManager()->key_TAB_Pressed())
 	{
 		createAccountMenu->down();
 
-		if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+		if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 	}
 
 	if (createAccountMenu->isSelectedID("Username"))
 	{
-		if (!textStarted) { SDL_StartTextInput(); getControlsManager()->text = userNameText; textStarted = true; }
+		if (!textStarted) { SDL_StartTextInput(GLUtils::window); getControlsManager()->text = userNameText; textStarted = true; }
 		userNameText = getControlsManager()->text;
 		createAccountMenu->getMenuItemByID("Username")->setText("Username: " + userNameText);
 	}
 	else
 	if (createAccountMenu->isSelectedID("Email"))
 	{
-		if (!textStarted) { SDL_StartTextInput(); getControlsManager()->text = emailText; textStarted = true; }
+		if (!textStarted) { SDL_StartTextInput(GLUtils::window); getControlsManager()->text = emailText; textStarted = true; }
 		emailText = getControlsManager()->text;
 		createAccountMenu->getMenuItemByID("Email")->setText("Email: " + emailText);
 	}
 	else
 	if (createAccountMenu->isSelectedID("Password"))
 	{
-		if (!textStarted) { SDL_StartTextInput(); getControlsManager()->text = passwordText; textStarted = true; }
+		if (!textStarted) { SDL_StartTextInput(GLUtils::window); getControlsManager()->text = passwordText; textStarted = true; }
 		passwordText = getControlsManager()->text;
 		passwordStarsText = "";
 		for (int i = 0; i < (int)passwordText.length(); i++)passwordStarsText += "*";
@@ -1705,7 +1705,7 @@ void OKGame::createAccountMenuUpdate()
 	else
 	if (createAccountMenu->isSelectedID("Confirm"))
 	{
-		if (!textStarted) { SDL_StartTextInput(); getControlsManager()->text = confirmPasswordText; textStarted = true; }
+		if (!textStarted) { SDL_StartTextInput(GLUtils::window); getControlsManager()->text = confirmPasswordText; textStarted = true; }
 		confirmPasswordText = getControlsManager()->text;
 		confirmPasswordStarsText = "";
 		for (int i = 0; i < (int)confirmPasswordText.length(); i++)confirmPasswordStarsText += "*";
@@ -1713,7 +1713,7 @@ void OKGame::createAccountMenuUpdate()
 	}
 	else
 	{
-		if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+		if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 	}
 
 	bool leaveMenu = false;
@@ -1763,7 +1763,7 @@ void OKGame::createAccountMenuUpdate()
 
 		chatEnabled = true;
 
-		if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+		if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 		getControlsManager()->text = "";
 
 		createAccountMenuShowing = false;
@@ -2770,7 +2770,7 @@ void OKGame::saveRoomConfigMenuUpdate()
 
 	if (mx != lastMX || my != lastMY)
 	{
-		if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+		if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 		lastMX = mx;
 		lastMY = my;
 	}
@@ -2779,26 +2779,26 @@ void OKGame::saveRoomConfigMenuUpdate()
 	{
 		saveRoomConfigMenu->up();
 
-		if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+		if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 	}
 
 	if (getControlsManager()->miniGame_DOWN_Pressed() || getControlsManager()->key_TAB_Pressed())
 	{
 		saveRoomConfigMenu->down();
 
-		if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+		if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 	}
 
 
 	if (saveRoomConfigMenu->isSelectedID("Name"))
 	{
-		if (!textStarted) { SDL_StartTextInput(); getControlsManager()->text = saveRoomConfigNameText; textStarted = true; }
+		if (!textStarted) { SDL_StartTextInput(GLUtils::window); getControlsManager()->text = saveRoomConfigNameText; textStarted = true; }
 		saveRoomConfigNameText = getControlsManager()->text;
 		saveRoomConfigMenu->getMenuItemByID("Name")->setText("Name: " + saveRoomConfigNameText);
 	}
 	else
 	{
-		if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+		if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 	}
 
 	bool leaveMenu = false;
@@ -2842,7 +2842,7 @@ void OKGame::saveRoomConfigMenuUpdate()
 	{
 		chatEnabled = true;
 
-		if (textStarted) { SDL_StopTextInput(); textStarted = false; }
+		if (textStarted) { SDL_StopTextInput(GLUtils::window); textStarted = false; }
 		saveRoomConfigMenuShowing = false;
 		if (saveRoomConfigMenu != nullptr)
 		{
