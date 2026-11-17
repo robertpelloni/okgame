@@ -2697,11 +2697,11 @@ void Grid::renderBackground()
 			if(y%2==0)
 			{
 				if(x%2==0)color = getGameLogic()->player->gridCheckeredBackgroundColor1;
-				else color = getGameLogic()->player->gridCheckeredBackgroundColor2;
+				else color = getGameLogic()->player->gridCheckeredBackgroundColor2.get();
 			}
 			else
 			{
-				if(x%2==0)color = getGameLogic()->player->gridCheckeredBackgroundColor2;
+				if(x%2==0)color = getGameLogic()->player->gridCheckeredBackgroundColor2.get();
 				else color = getGameLogic()->player->gridCheckeredBackgroundColor1;
 			}
 	
@@ -3960,7 +3960,7 @@ string Grid::getState() {
         Poco::JSON::Array row;
         for (int x = 0; x < w; x++) {
             shared_ptr<Block> b = get(x, y);
-            if (b) row.add(b->getColor().toInt());
+            if (b) row.add(b->getColor()->getRGBA());
             else row.add(Poco::Dynamic::Var());
         }
         arr.add(row);
@@ -3985,7 +3985,7 @@ void Grid::applyState(Poco::JSON::Array::Ptr state) {
             if (!row->get(x).isEmpty()) {
                 int colorInt = row->get(x).convert<int>();
                 shared_ptr<Block> b = make_shared<Block>(game, this, nullptr, bt);
-                b->getColor().copyFrom(BobColor::fromInt(colorInt));
+                b->setColor(new BobColor(colorInt));
                 add(x, y, b);
             }
         }
