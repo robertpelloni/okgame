@@ -94,6 +94,8 @@
 #include "src/Utility/System.h"
 #include "src/Utility/gl/GLUtils.h"
 #include "src/Utility/gl/BobTexture.h"
+#include "src/Utility/gl/Texture.h"
+#include "src/Utility/OKString.h"
 #include "src/Utility/BobFont.h"
 #include "src/Utility/Caption.h"
 #include "src/Utility/CaptionManager.h"
@@ -131,6 +133,7 @@
 #include "src/Engine/rpg/event/Dialogue.h"
 #include "src/Engine/rpg/event/DialogueData.h"
 #include "src/Engine/rpg/event/BobEvent.h"
+#include "src/Engine/rpg/event/Event.h"
 #include "src/Engine/rpg/event/EventCommand.h"
 #include "src/Engine/rpg/event/EventData.h"
 #include "src/Engine/rpg/event/EventManager.h"
@@ -237,5 +240,6 @@
 #include "src/Engine/EnginePart.h"
 #include "src/Engine/rpg/BGClientEngine.h"
 #include "src/Engine/MiniGameEngine.h"
+#include "src/Puzzle/OKGame.h"
 
 #endif

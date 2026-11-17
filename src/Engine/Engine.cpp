@@ -405,7 +405,7 @@ shared_ptr<CinematicsManager> Engine::getCinematicsManager()
 
 Map* Engine::getCurrentMap()
 {
-	Map* m = mapManager->currentMap;
+	Map* m = mapManager->currentMap.get();
 	if (m == nullptr)
 	{
 		m = new Map(this, new MapData(-1, "none", 0, 0));
@@ -706,13 +706,13 @@ void Engine::incomingSpriteData(string s)
 	}
 	else
 	{
-		Sprite* sprite = nullptr;
+		shared_ptr<Sprite> sprite = nullptr;
 		if(getSpriteManager()->spriteByNameHashMap.containsKey(data->getName()))
 		sprite = getSpriteManager()->spriteByNameHashMap.get(data->getName());
 
 		if (sprite == nullptr)
 		{
-			sprite = new Sprite(this);
+			sprite = make_shared<Sprite>(this);
 		}
 
 		sprite->initializeWithSpriteData(data);

@@ -1,4 +1,5 @@
 
+#pragma once
 #include "bobtypes.h"
 
 #include "Gwen/Platform.h"

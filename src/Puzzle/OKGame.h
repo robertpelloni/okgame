@@ -30,6 +30,12 @@ class Logger;
 //#include "Stats/GameStats.h"
 #include "Stats/UserStatsForSpecificGameAndDifficulty.h"
 #include "Stats/LeaderBoardAndHighScoreBoardEntry.h"
+
+// The OK* stats types were renamed in declarations but never defined; the
+// Stats headers still define the BobsGame* classes and OKGameMenus.cpp
+// implements against them. Alias so both spellings name the same types.
+using OKGameUserStatsForSpecificGameAndDifficulty = BobsGameUserStatsForSpecificGameAndDifficulty;
+using OKGameLeaderBoardAndHighScoreBoard = BobsGameLeaderBoardAndHighScoreBoard;
 //#include "GameTestMenu.h"
 
 class OKGameGameStats;

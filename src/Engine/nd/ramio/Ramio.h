@@ -79,7 +79,7 @@ public:
 	void doDeathSequence();
 
 
-	ConsoleText* ramioText = Main::console->add("ramioText", BobColor::green);
+	sp<ConsoleText> ramioText = Main::console->add("ramioText", BobColor::green);
 
 	virtual void update() override;
 

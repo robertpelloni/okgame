@@ -211,61 +211,61 @@ shared_ptr<ControlsManager> EnginePart::getControlsManager()
 Clock* EnginePart::getClock()
 {
 	if (getClientGameEngine() == nullptr)return nullptr;
-	return getClientGameEngine()->clock;
+	return getClientGameEngine()->clock.get();
 }
 
 GUIManager* EnginePart::getGUIManager()
 {
 	if (getClientGameEngine() == nullptr)return nullptr;
-	return getClientGameEngine()->guiManager;
+	return getClientGameEngine()->guiManager.get();
 }
 
 StuffMenu* EnginePart::getStuffMenu()
 {
 	if (getGUIManager() == nullptr)return nullptr;
-	return getGUIManager()->stuffMenu;
+	return getGUIManager()->stuffMenu.get();
 }
 
 GameStore* EnginePart::getGameStore()
 {
 	if (getGUIManager() == nullptr)return nullptr;
-	return getGUIManager()->gameStore;
+	return getGUIManager()->gameStore.get();
 }
 
 PlayerEditMenu* EnginePart::getPlayerEditMenu()
 {
 	if (getGUIManager() == nullptr)return nullptr;
-	return getGUIManager()->playerEditMenu;
+	return getGUIManager()->playerEditMenu.get();
 }
 
 Player* EnginePart::getPlayer()
 {
 	if (getClientGameEngine() == nullptr)return nullptr;
-	return getClientGameEngine()->player;
+	return getClientGameEngine()->player.get();
 }
 
 ND* EnginePart::getND()
 {
 	if (getClientGameEngine() == nullptr)return nullptr;
-	return getClientGameEngine()->nD;
+	return getClientGameEngine()->nD.get();
 }
 
 Wallet* EnginePart::getWallet()
 {
 	if (getClientGameEngine() == nullptr)return nullptr;
-	return getClientGameEngine()->wallet;
+	return getClientGameEngine()->wallet.get();
 }
 
 FriendManager* EnginePart::getFriendManager()
 {
 	if (getClientGameEngine() == nullptr)return nullptr;
-	return getClientGameEngine()->friendManager;
+	return getClientGameEngine()->friendManager.get();
 }
 
 BobStatusBar* EnginePart::getBobStatusBar()
 {
 	if (getClientGameEngine() == nullptr)return nullptr;
-	return getClientGameEngine()->statusBar;
+	return getClientGameEngine()->statusBar.get();
 }
 
 NotificationManager* EnginePart::getNotificationManager()
