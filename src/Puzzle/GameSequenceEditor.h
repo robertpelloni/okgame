@@ -170,7 +170,7 @@ private:
 	Gwen::Controls::Button* duplicateGameSequenceButton = nullptr;
 	Gwen::Controls::Button* deleteGameSequenceButton = nullptr;
     
-	GameSequence *currentGameSequence = nullptr;
+	shared_ptr<GameSequence> currentGameSequence = nullptr;
     
     
 	//WindowControl* selectWindow = nullptr;

@@ -397,14 +397,14 @@ void GameSequenceEditorControl::doResize()
 void GameSequenceEditorControl::populateGameTypesListBox()
 {//=========================================================================================================================
 
-	ArrayList<pair<GameType*, pair<string, BobColor*>>> gamesStringColor = bobsGame->getSortedGameTypes();
+	ArrayList<BobsGame::GameTypeStringColorPairPair> gamesStringColor = bobsGame->getSortedGameTypes();
 	for (int i = 0; i < gamesStringColor.size(); i++)
 	{
-		pair<GameType*, pair<string, BobColor*>> gameTypeStringColorPairPair = gamesStringColor.get(i);
-		GameType *g = gameTypeStringColorPairPair.first;
-		pair<string, BobColor*> *stringColorPair = &(gameTypeStringColorPairPair.second);
+		BobsGame::GameTypeStringColorPairPair gameTypeStringColorPairPair = gamesStringColor.get(i);
+		shared_ptr<GameType> g = gameTypeStringColorPairPair.first;
+		pair<string, shared_ptr<BobColor>> *stringColorPair = &(gameTypeStringColorPairPair.second);
 		string name = stringColorPair->first;
-		BobColor *color = stringColorPair->second;
+		shared_ptr<BobColor> color = stringColorPair->second;
 
 		Layout::TableRow *row = gameTypesListBox->AddItem(name, g->uuid);
 		//row->onRowSelected.Add(this, &GameSequenceEditorControl::onGameTypesListSelect);
@@ -417,14 +417,14 @@ void GameSequenceEditorControl::populateGameTypesListBox()
 void GameSequenceEditorControl::populateGameSequencesListBox()
 {//=========================================================================================================================
 
-	ArrayList<pair<GameSequence*, pair<string, BobColor*>>> gamesStringColor = bobsGame->getSortedGameSequences();
+	ArrayList<BobsGame::GameSequenceStringColorPairPair> gamesStringColor = bobsGame->getSortedGameSequences();
 	for (int i = 0; i < gamesStringColor.size(); i++)
 	{
-		pair<GameSequence*, pair<string, BobColor*>> gameSequenceStringColorPairPair = gamesStringColor.get(i);
-		GameSequence *g = gameSequenceStringColorPairPair.first;
-		pair<string, BobColor*> *stringColorPair = &(gameSequenceStringColorPairPair.second);
+		BobsGame::GameSequenceStringColorPairPair gameSequenceStringColorPairPair = gamesStringColor.get(i);
+		shared_ptr<GameSequence> g = gameSequenceStringColorPairPair.first;
+		pair<string, shared_ptr<BobColor>> *stringColorPair = &(gameSequenceStringColorPairPair.second);
 		string name = stringColorPair->first;
-		BobColor *color = stringColorPair->second;
+		shared_ptr<BobColor> color = stringColorPair->second;
 
 		Layout::TableRow *row = gameSequencesListBox->AddItem(name, g->uuid);
 		row->onRowSelected.Add(this, &GameSequenceEditorControl::onGameSequencesListSelect);
@@ -449,7 +449,7 @@ void GameSequenceEditorControl::saveGameSequenceListToCurrentGameSequence()
 
 		string uuid = row->GetName().c_str();
 
-		GameType *gt = bobsGame->getGameTypeByUUID(uuid);
+		shared_ptr<GameType> gt = bobsGame->getGameTypeByUUID(uuid);
 		currentGameSequence->importExport_gameUUIDs.add(gt->uuid);
 	}
 
@@ -467,7 +467,7 @@ void GameSequenceEditorControl::saveGameSequenceListToCurrentGameSequence()
 	bool taken = false;
 	for (int i = 0; i < bobsGame->loadedGameSequences.size(); i++)
 	{
-		GameSequence *s = bobsGame->loadedGameSequences.get(i);
+		shared_ptr<GameSequence> s = bobsGame->loadedGameSequences.get(i);
 		if (s != currentGameSequence && s->name == name)taken = true;
 	}
 	if (taken)
@@ -475,7 +475,7 @@ void GameSequenceEditorControl::saveGameSequenceListToCurrentGameSequence()
 		int n = 0;
 		for (int i = 0; i < bobsGame->loadedGameSequences.size(); i++)
 		{
-			GameSequence *s = bobsGame->loadedGameSequences.get(i);
+			shared_ptr<GameSequence> s = bobsGame->loadedGameSequences.get(i);
 			if (s != currentGameSequence && s->name == name + " " + to_string(n))
 			{
 				n++;
@@ -504,7 +504,7 @@ void GameSequenceEditorControl::initFromCurrentGameSequence()
 	for(int i=0;i<currentGameSequence->importExport_gameUUIDs.size();i++)
 	{
 		string otheruuid = currentGameSequence->importExport_gameUUIDs.get(i);
-		GameType *gt = bobsGame->getGameTypeByUUID(otheruuid);
+		shared_ptr<GameType> gt = bobsGame->getGameTypeByUUID(otheruuid);
 		currentGameSequenceListBox->AddItem(gt->name, gt->uuid);
 	}
 	currentGameSequenceNameTextBox->SetText(currentGameSequence->name);
@@ -519,7 +519,7 @@ void GameSequenceEditorControl::onGameSequencesListSelect(Base* control)
 	Layout::TableRow* row = (Layout::TableRow*)control;
 	string uuid = row->GetName().c_str();
 
-	GameSequence *s = bobsGame->getGameSequenceByUUID(uuid);
+	shared_ptr<GameSequence> s = bobsGame->getGameSequenceByUUID(uuid);
 
 	if (s == nullptr)
 	{
@@ -724,7 +724,7 @@ void GameSequenceEditorControl::editSelectedGameSequence(Base* control)
 void GameSequenceEditorControl::createNewGameSequence(Base* control)
 {//=========================================================================================================================
  //create new currentGameType with defaults and close the list
-	GameSequence *s = new GameSequence();
+	shared_ptr<GameSequence> s = make_shared<GameSequence>();
 	s->name += to_string(bobsGame->loadedGameSequences.size());
 	//bobsGame->loadedGameSequences.add(s);
 
@@ -752,7 +752,7 @@ void GameSequenceEditorControl::duplicateGameSequence(Base* control)
 
 	//BobsGame::log.debug(to_string(currentGameType->pieceTypes.size()));
 
-	GameSequence *s = new GameSequence();
+	shared_ptr<GameSequence> s = make_shared<GameSequence>();
 	string uuid = s->uuid;
 	*s = *currentGameSequence;
 	s->uuid = uuid;
@@ -765,7 +765,7 @@ void GameSequenceEditorControl::duplicateGameSequence(Base* control)
 	bool taken = false;
 	for (int i = 0; i < bobsGame->loadedGameSequences.size(); i++)
 	{
-		GameSequence *g = bobsGame->loadedGameSequences.get(i);
+		shared_ptr<GameSequence> g = bobsGame->loadedGameSequences.get(i);
 		if (g != s && g->name == s->name)taken = true;
 	}
 	if (taken)
@@ -773,7 +773,7 @@ void GameSequenceEditorControl::duplicateGameSequence(Base* control)
 		int n = 0;
 		for (int i = 0; i < bobsGame->loadedGameSequences.size(); i++)
 		{
-			GameSequence *g = bobsGame->loadedGameSequences.get(i);
+			shared_ptr<GameSequence> g = bobsGame->loadedGameSequences.get(i);
 			if (g != s && g->name == s->name + " " + to_string(n))
 			{
 				n++;
@@ -806,7 +806,7 @@ void GameSequenceEditorControl::deleteGameSequence(Base* control)
 	Layout::TableRow* row = gameSequencesListBox->GetSelectedRow();
 	string uuid = row->GetName().c_str();
 
-	GameSequence *bt = bobsGame->getGameSequenceByUUID(uuid);
+	shared_ptr<GameSequence> bt = bobsGame->getGameSequenceByUUID(uuid);
 
 	if (bt == nullptr)
 	{
@@ -1018,7 +1018,7 @@ void GameSequenceEditorControl::onAddButton(Base* control)
 	Layout::TableRow* row = gameTypesListBox->GetSelectedRow();
 	string uuid = row->GetName().c_str();
 
-	GameType *gt = bobsGame->getGameTypeByUUID(uuid);
+	shared_ptr<GameType> gt = bobsGame->getGameTypeByUUID(uuid);
 
 	Layout::TableRow* newRow = currentGameSequenceListBox->AddItem(gt->name,gt->uuid);
 
@@ -1056,7 +1056,7 @@ void GameSequenceEditorControl::onUpButton(Base* control)
 
 	Layout::TableRow* row = currentGameSequenceListBox->GetSelectedRow();
 	string uuid = row->GetName().c_str();
-	GameType *selectedGame = bobsGame->getGameTypeByUUID(uuid);
+	shared_ptr<GameType> selectedGame = bobsGame->getGameTypeByUUID(uuid);
 
 	int index = 0;
 	for (int i = 0; i < currentGameSequenceListBox->GetNumRows(); i++)
@@ -1078,7 +1078,7 @@ void GameSequenceEditorControl::onUpButton(Base* control)
 		for (int i = 0; i<currentGameSequence->importExport_gameUUIDs.size(); i++)
 		{
 			string newUUID = currentGameSequence->importExport_gameUUIDs.get(i);
-			GameType *game = bobsGame->getGameTypeByUUID(newUUID);
+			shared_ptr<GameType> game = bobsGame->getGameTypeByUUID(newUUID);
 			currentGameSequenceListBox->AddItem(game->name, game->uuid);
 		}
 		currentGameSequenceListBox->SetSelectedRow(currentGameSequenceListBox->GetRow(index - 1));
@@ -1095,7 +1095,7 @@ void GameSequenceEditorControl::onDownButton(Base* control)
 	Layout::TableRow* row = currentGameSequenceListBox->GetSelectedRow();
 	string uuid = row->GetName().c_str();
 
-	GameType *selectedGame = bobsGame->getGameTypeByUUID(uuid);
+	shared_ptr<GameType> selectedGame = bobsGame->getGameTypeByUUID(uuid);
 
 	int index = currentGameSequenceListBox->GetNumRows() - 1;
 	for (int i = 0; i < currentGameSequenceListBox->GetNumRows(); i++)
@@ -1117,7 +1117,7 @@ void GameSequenceEditorControl::onDownButton(Base* control)
 		for (int i = 0; i<currentGameSequence->importExport_gameUUIDs.size(); i++)
 		{
 			string newUUID = currentGameSequence->importExport_gameUUIDs.get(i);
-			GameType *game = bobsGame->getGameTypeByUUID(newUUID);
+			shared_ptr<GameType> game = bobsGame->getGameTypeByUUID(newUUID);
 			currentGameSequenceListBox->AddItem(game->name, game->uuid);
 		}
 		currentGameSequenceListBox->SetSelectedRow(currentGameSequenceListBox->GetRow(index + 1));
@@ -1229,7 +1229,6 @@ void BobsGame::gameSequenceEditorMenuUpdate()
 		if (gameSequenceEditorMenu != nullptr)
 		{
 			gameSequenceEditorMenuCursorPosition = gameSequenceEditorMenu->cursorPosition;
-			delete gameSequenceEditorMenu;
 			gameSequenceEditorMenu = nullptr;
 		}
 	}
