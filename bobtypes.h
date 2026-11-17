@@ -64,6 +64,12 @@
 template<typename T> using sp = std::shared_ptr<T>;
 template<typename T, typename... Args> inline sp<T> ms(Args&&... args) { return std::make_shared<T>(std::forward<Args>(args)...); }
 
+// Borrowed shared_ptr to an object owned elsewhere (map/engine lists).
+// The refactor's ms<T>(dynamic_cast<T*>(ptr)) sites meant this, not
+// construction: make_shared would try to construct a fresh T from the
+// pointer. borrowed() wraps without taking ownership.
+template<typename T> inline sp<T> borrowed(T* p) { return sp<T>(p, [](T*) {}); }
+
 typedef signed char			int8;
 typedef signed short		int16;
 typedef signed int			int32;

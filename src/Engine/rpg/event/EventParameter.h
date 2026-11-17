@@ -12,6 +12,8 @@ class Logger;
 
 
 class Entity;
+class Event;
+class Map;
 
 class EventParameter : public EnginePart
 {
@@ -25,6 +27,9 @@ public:
 	// entities are owned by the map/engine, so this uses a no-op deleter
 	// where parse code assigns it from raw pointers.
 	sp<Entity> entityObject = nullptr;
+
+	// Map-typed parameters (changeMap_MAP_* commands read this).
+	sp<Map> mapObject = nullptr;
 
 	int type = -1;
 
@@ -69,6 +74,10 @@ public:
 
 
 	void updateParameterVariablesFromString(BobEvent* event);
+	void updateParameterVariablesFromString(Event* event);
+private:
+	void updateParameterVariablesFromString_Impl(Entity* thisEntity);
+public:
 
 
 	string toString();

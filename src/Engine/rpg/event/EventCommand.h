@@ -15,6 +15,7 @@ class Logger;
 
 
 class EventParameter;
+class Event;
 
 
 class EventCommand : public EnginePart, public std::enable_shared_from_this<EventCommand>
@@ -47,6 +48,7 @@ public:
 
 
 	static shared_ptr<EventCommand> parseEventCommandFromCommandString(Engine* g, BobEvent* event, string commandString);
+	static shared_ptr<EventCommand> parseEventCommandFromCommandString(Engine* g, Event* event, string commandString);
 
 
 	shared_ptr<EventCommand> getParent();

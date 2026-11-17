@@ -41,6 +41,14 @@ int EventCommand::getNumParams()
 	}
 }
 
+shared_ptr<EventCommand> EventCommand::parseEventCommandFromCommandString(Engine* g, Event* event, string commandString)
+{
+	// The BobEvent parameter is unused by the parser (parameters are built
+	// from the engine + string only), so the Event fork can forward.
+	(void)event;
+	return parseEventCommandFromCommandString(g, (BobEvent*)nullptr, commandString);
+}
+
 shared_ptr<EventCommand> EventCommand::parseEventCommandFromCommandString(Engine* g, BobEvent* event, string commandString)
 { //===============================================================================================
 

@@ -60,6 +60,16 @@ void EventManager::update()
 	}
 }
 
+void EventManager::addToEventQueueIfNotThere(shared_ptr<Event> event)
+{
+
+	if (event->getWasAddedToQueue() == false)
+	{
+		runningEventObjectQueue.add(event);
+		event->setAddedToQueue();
+	}
+}
+
 void EventManager::addToEventQueueIfNotThere(shared_ptr<BobEvent> event)
 { //=========================================================================================================================
 

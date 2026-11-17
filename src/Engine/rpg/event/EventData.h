@@ -532,6 +532,10 @@ public:
 	const static EventScriptCommand* setShowMoneyCaption_BOOL;
 	const static EventScriptCommand* setShowAllBobStatusBarCaptions_BOOL;
 	const static EventScriptCommand* setShowBobStatusBar_BOOL;
+	const static EventScriptCommand* setShowAllStatusBarCaptions_BOOL;
+	const static EventScriptCommand* setShowStatusBar_BOOL;
+	const static EventScriptCommand* startOKGameOnStadiumScreen_AREA;
+	const static EventScriptCommand* blockUntilOKGameDead;
 
 	const static EventScriptCommand* setShowNDButton_BOOL;
 	const static EventScriptCommand* setShowGameStoreButton_BOOL;

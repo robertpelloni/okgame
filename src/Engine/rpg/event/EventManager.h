@@ -13,6 +13,7 @@ class GameString;
 class Flag;
 class Skill;
 class Item;
+class Event;
 
 class EventManager : public EnginePart
 {
@@ -30,12 +31,18 @@ public:
 
 	ArrayList<shared_ptr<BobEvent>> runningEventQueue;
 
+	// The Event fork (parallel to BobEvent) tracks its own objects here;
+	// Event::initEvent/runEvent were written against these lists.
+	ArrayList<shared_ptr<Event>> eventObjectList;
+	ArrayList<shared_ptr<Event>> runningEventObjectQueue;
+
 	EventManager(Engine* g);
 
 
 	void update();
 
 	void addToEventQueueIfNotThere(shared_ptr<BobEvent> event);
+	void addToEventQueueIfNotThere(shared_ptr<Event> event);
 
 	bool isEventInQueue(shared_ptr<BobEvent> event);
 

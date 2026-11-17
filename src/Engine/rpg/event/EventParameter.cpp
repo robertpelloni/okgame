@@ -70,6 +70,28 @@ void EventParameter::parsePrimitive(const string& typeString, const string& prim
 }
 
 void EventParameter::updateParameterVariablesFromString(BobEvent* event)
+{
+	Entity* thisEntity = nullptr;
+	if (event != nullptr)
+	{
+		if (event->door != nullptr) thisEntity = event->door;
+		if (event->entity != nullptr) thisEntity = event->entity;
+	}
+	updateParameterVariablesFromString_Impl(thisEntity);
+}
+
+void EventParameter::updateParameterVariablesFromString(Event* event)
+{
+	Entity* thisEntity = nullptr;
+	if (event != nullptr)
+	{
+		if (event->door != nullptr) thisEntity = event->door.get();
+		if (event->entity != nullptr) thisEntity = event->entity.get();
+	}
+	updateParameterVariablesFromString_Impl(thisEntity);
+}
+
+void EventParameter::updateParameterVariablesFromString_Impl(Entity* thisEntity)
 { //===============================================================================================
 
 	//parameterName is always OBJECT.id
@@ -109,20 +131,11 @@ void EventParameter::updateParameterVariablesFromString(BobEvent* event)
 					{
 						if (parameterString == "THIS")
 						{
-							Entity* o = nullptr;
-
-							if (event->door != nullptr)
-							{
-								o = event->door;
-							}
-							if (event->entity != nullptr)
-							{
-								o = event->entity;
-							}
+							Entity* o = thisEntity;
 
 							this->object = o;
 							// Borrowed: owned by the current map/engine.
-							this->entityObject = sp<Entity>(o, [](Entity*) {});
+							if (o != nullptr) this->entityObject = sp<Entity>(o, [](Entity*) {});
 						}
 						else
 						{
@@ -138,6 +151,8 @@ void EventParameter::updateParameterVariablesFromString(BobEvent* event)
 								//String newTypeString = parameterString.substring(parameterString.indexOf("."));
 
 								this->object = o;
+								// Borrowed: maps are owned by the map manager.
+								this->mapObject = sp<Map>(o, [](Map*) {});
 							}
 						}
 					}
