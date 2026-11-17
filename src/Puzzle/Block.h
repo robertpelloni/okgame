@@ -119,8 +119,8 @@ public:
 	static shared_ptr<BlockType> squareBlockType;
 	static shared_ptr<BlockType> shotPieceBlockType;
 
-	Sprite* sprite = nullptr;//dont serialize these
-	Sprite* specialSprite = nullptr;
+	shared_ptr<Sprite> sprite = nullptr;//dont serialize these
+	shared_ptr<Sprite> specialSprite = nullptr;
 //	BlockType();
 //	BlockType(const string& spriteName, ArrayList<Color*>* colors);
 //	BlockType(const string& spriteName, ArrayList<Color*>* colors, Color* specialColor);
@@ -379,7 +379,7 @@ public:
 	bool connectedUpLeft = false;
 	bool connectedDownLeft = false;
 
-	SpriteAnimationSequence* anim = nullptr;
+	shared_ptr<SpriteAnimationSequence> anim = nullptr;
 
 //	bool operator==(const Block& rhs) const
 //	{

@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "src/Engine/entity/Sprite.h"
 
 //------------------------------------------------------------------------------
 //Copyright Robert Pelloni.
@@ -949,7 +950,7 @@ void Block::update()
 		//if (anim == nullptr)anim = blockType->sprite->getFirstAnimation();
 		if (animationName.length() > 0)
 		{
-			SpriteAnimationSequence* namedAnimation = blockType->sprite->getAnimationByName(animationName);
+			shared_ptr<SpriteAnimationSequence> namedAnimation = blockType->sprite->getAnimationByName(animationName);
 			if (namedAnimation != nullptr)anim = namedAnimation;
 		}
 		else anim = blockType->sprite->getFirstAnimation();
@@ -1413,8 +1414,8 @@ void Block::render(float screenX, float screenY, float a, float scale, bool inte
 		float lowestY = (float)piece->getLowestOffsetY();
 		float thisY = (float)yInPiece - lowestY;
 
-		Sprite* sprite = getBobsGame()->getSpriteFromName(piece->pieceType->spriteName);
-		BobTexture* texture = sprite->texture;
+		shared_ptr<Sprite> sprite = getBobsGame()->getSpriteFromName(piece->pieceType->spriteName);
+		auto texture = sprite->texture;
 
 		float x0InImage = (thisX / blocksWidth) + 1.0f/ sprite->getImageWidth();
 		float x1InImage = ((thisX + 1) / blocksWidth) + 1.0f / sprite->getImageWidth();
@@ -1791,7 +1792,7 @@ int Block::blockH()
 //=========================================================================================================================
 GameType* Block::getSettings()
 {//=========================================================================================================================
-	return getGameLogic()->currentGameType;
+	return getGameLogic()->currentGameType.get();
 }
 
 //=========================================================================================================================
