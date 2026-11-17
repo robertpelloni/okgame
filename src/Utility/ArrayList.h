@@ -116,6 +116,11 @@ public:
 	// shared_ptr refactor switched call sites from get() to at().
 	E at(int index) { return get(index); }
 
+	// Call sites written during the refactor use -> on ArrayList values
+	// (as if they were pointers); forward to this object.
+	ArrayList* operator->() { return this; }
+	const ArrayList* operator->() const { return this; }
+
 	int indexOf(const E& e) const {
 		auto it = std::find(v.begin(), v.end(), e);
 		if (it != v.end()) {

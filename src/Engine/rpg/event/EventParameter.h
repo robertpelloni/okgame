@@ -11,12 +11,20 @@ class Logger;
 
 
 
+class Entity;
+
 class EventParameter : public EnginePart
 {
 public:
 	static Logger log;
 
 	void* object = nullptr;
+
+	// Typed entity reference the Event command implementations read
+	// (parameterList->at(i)->entityObject.get()). Borrowed ownership: the
+	// entities are owned by the map/engine, so this uses a no-op deleter
+	// where parse code assigns it from raw pointers.
+	sp<Entity> entityObject = nullptr;
 
 	int type = -1;
 

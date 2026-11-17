@@ -1138,13 +1138,13 @@ void BobsGame::controllerMenuRender()
 
 
 //=========================================================================================================================
-void BobsGame::playerSettingsMenuInit(BobMenu* m, PuzzlePlayer *p)
+void BobsGame::playerSettingsMenuInit(shared_ptr<BobMenu> m, shared_ptr<PuzzlePlayer> p)
 {//=========================================================================================================================
 
 	m->add("Player Hue Shift: " + to_string((int)(p->hue * 100)) + "%", "Player Hue Shift");
 }
 //=========================================================================================================================
-void BobsGame::playerSettingsMenuLeft(BobMenu* m, PuzzlePlayer *p)
+void BobsGame::playerSettingsMenuLeft(shared_ptr<BobMenu> m, shared_ptr<PuzzlePlayer> p)
 {//=========================================================================================================================
 
 	if (m->isSelectedID("Player Hue Shift"))
@@ -1165,7 +1165,7 @@ void BobsGame::playerSettingsMenuLeft(BobMenu* m, PuzzlePlayer *p)
 }
 
 //=========================================================================================================================
-void BobsGame::playerSettingsMenuRight(BobMenu* m, PuzzlePlayer *p)
+void BobsGame::playerSettingsMenuRight(shared_ptr<BobMenu> m, shared_ptr<PuzzlePlayer> p)
 {//=========================================================================================================================
 
 	if (m->isSelectedID("Player Hue Shift"))
@@ -1185,7 +1185,7 @@ void BobsGame::playerSettingsMenuRight(BobMenu* m, PuzzlePlayer *p)
 
 }
 //=========================================================================================================================
-void BobsGame::playerControllerSettingsMenuInit(BobMenu* m, PuzzlePlayer *p)
+void BobsGame::playerControllerSettingsMenuInit(shared_ptr<BobMenu> m, shared_ptr<PuzzlePlayer> p)
 {//=========================================================================================================================
 
 	m->add("Slam With Up: " + string(p->slamWithUp ? "On" : "Off"), "Slam With Up");
@@ -1196,7 +1196,7 @@ void BobsGame::playerControllerSettingsMenuInit(BobMenu* m, PuzzlePlayer *p)
 }
 
 //=========================================================================================================================
-void BobsGame::playerControllerSettingsMenuToggle(BobMenu* m, PuzzlePlayer *p)
+void BobsGame::playerControllerSettingsMenuToggle(shared_ptr<BobMenu> m, shared_ptr<PuzzlePlayer> p)
 {//=========================================================================================================================
 
 	if (m->isSelectedID("Slam With Up"))
@@ -1260,7 +1260,7 @@ void BobsGame::playerControllerSettingsMenuToggle(BobMenu* m, PuzzlePlayer *p)
 }
 
 //=========================================================================================================================
-void BobsGame::playerPauseMiniMenuUpdate(PuzzlePlayer *p)
+void BobsGame::playerPauseMiniMenuUpdate(shared_ptr<PuzzlePlayer> p)
 {//=========================================================================================================================
 
 	if (p != nullptr)
@@ -1414,7 +1414,7 @@ void BobsGame::playerPauseMiniMenuUpdate(PuzzlePlayer *p)
 }
 
 //=========================================================================================================================
-void BobsGame::playerPauseMiniMenuRender(PuzzlePlayer *p, float x0, float x1, float y0, float y1)
+void BobsGame::playerPauseMiniMenuRender(shared_ptr<PuzzlePlayer> p, float x0, float x1, float y0, float y1)
 {//=========================================================================================================================
 
 	//GLUtils::drawFilledRect(255,255,255, x0,x1,y0,y1, 0.7f);
@@ -6271,7 +6271,7 @@ void BobsGame::localMultiplayerPlayerJoinMenuRender()
 
 
 //=========================================================================================================================
-void BobsGame::playerDifficultyMiniMenuUpdate(PuzzlePlayer *p)
+void BobsGame::playerDifficultyMiniMenuUpdate(shared_ptr<PuzzlePlayer> p)
 {//=========================================================================================================================
 
 	if (p != nullptr)
@@ -6353,7 +6353,7 @@ void BobsGame::playerDifficultyMiniMenuUpdate(PuzzlePlayer *p)
 }
 
 //=========================================================================================================================
-void BobsGame::playerDifficultyMiniMenuRender(PuzzlePlayer *p, float x, float y)
+void BobsGame::playerDifficultyMiniMenuRender(shared_ptr<PuzzlePlayer> p, float x, float y)
 {//=========================================================================================================================
 
 	if (p->menu != nullptr)
@@ -6363,7 +6363,7 @@ void BobsGame::playerDifficultyMiniMenuRender(PuzzlePlayer *p, float x, float y)
 }
 
 //=========================================================================================================================
-void BobsGame::playerGameSequenceMiniMenuUpdate(PuzzlePlayer *p)
+void BobsGame::playerGameSequenceMiniMenuUpdate(shared_ptr<PuzzlePlayer> p)
 {//=========================================================================================================================
 
 	const string PLAY_GAME_SEQUENCE = "Play Game Sequence";
@@ -6590,7 +6590,7 @@ void BobsGame::playerGameSequenceMiniMenuUpdate(PuzzlePlayer *p)
 }
 
 //=========================================================================================================================
-void BobsGame::playerGameSequenceMiniMenuRender(PuzzlePlayer *p, float x, float y)
+void BobsGame::playerGameSequenceMiniMenuRender(shared_ptr<PuzzlePlayer> p, float x, float y)
 {//=========================================================================================================================
 
 	if (p->menu != nullptr)

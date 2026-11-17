@@ -102,6 +102,8 @@ void EventParameter::updateParameterVariablesFromString(BobEvent* event)
 					if (parameterString == "PLAYER")
 					{
 						this->object = getPlayer();
+						// Borrowed: the player is owned by the client engine.
+						this->entityObject = sp<Entity>(getPlayer(), [](Entity*) {});
 					}
 					else
 					{
@@ -119,6 +121,8 @@ void EventParameter::updateParameterVariablesFromString(BobEvent* event)
 							}
 
 							this->object = o;
+							// Borrowed: owned by the current map/engine.
+							this->entityObject = sp<Entity>(o, [](Entity*) {});
 						}
 						else
 						{
