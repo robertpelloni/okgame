@@ -22,7 +22,8 @@ OKTexture::OKTexture(const string &cacheName, GLuint textureID)
 	this->glTargetType = GL_TEXTURE_2D;
 	this->cacheName = cacheName;
 	this->textureID = textureID;
-	lastBoundTexture = shared_from_this();
+	// Not yet owned by a shared_ptr during construction; bind() replaces this with shared_from_this().
+	lastBoundTexture = borrowed<OKTexture>(this);
 }
 
 
