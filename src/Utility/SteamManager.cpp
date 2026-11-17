@@ -24,10 +24,8 @@ void SteamManager::init() {
     }
     Main::log.info("Steam initialized successfully with AppID " + std::to_string(appID));
 
-    // Request user stats and achievements
-    if (SteamUserStats()) {
-        SteamUserStats()->RequestCurrentStats();
-    }
+    // Current Steamworks SDKs request user stats automatically during SteamAPI_Init
+    // (ISteamUserStats::RequestCurrentStats was removed from the SDK).
 #else
     //Main::log.info("Steam support not compiled in");
 #endif

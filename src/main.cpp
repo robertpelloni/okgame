@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "src/Utility/SteamManager.h"
 #include <stdlib.h>
 #include <time.h>
 #include <fstream>
@@ -328,7 +329,7 @@ void Main::mainInit()
 	loadGlobalSettingsFromXML();
 
 	SteamManager::init();
-	LuaManager::init();
+	// LuaManager::init() disabled: no Lua library is vendored in lib/ (LuaManager is not part of the build target).
 
 #ifndef ORBIS
 	if (globalSettings->useXInput == false)SDL_SetHint(SDL_HINT_XINPUT_ENABLED, "0");
@@ -933,7 +934,7 @@ void Main::whilefix()
 
 			frame = true;
 
-			mainObject->render();
+			mainObject->renderMain();
 			doSwap();
 		}
 		justDelay(10);
@@ -1388,7 +1389,7 @@ void Main::doScreenShotCheck()
 				flipdata[(((y*w) + x) * 4) + 3] = buffer[(((((h - 1) - y)*w) + x) * 4) + 3];
 
 			}
-		SDL_Surface *s = SDL_CreateRGBSurfaceFrom(flipdata, w, h, 32, w * 4, GLUtils::rmask, GLUtils::gmask, GLUtils::bmask, GLUtils::amask);// 0x0000FF00, 0x00FF0000, 0xFF000000, 0x000000FF);
+		SDL_Surface *s = SDL_CreateSurfaceFrom(w, h, SDL_GetPixelFormatForMasks(32, GLUtils::rmask, GLUtils::gmask, GLUtils::bmask, GLUtils::amask), flipdata, w * 4);
 		IMG_SavePNG(s, fileName.c_str());
 		SDL_DestroySurface(s);
 		delete[] buffer;
@@ -1508,7 +1509,7 @@ void Main::processEvents()
 //==========================================================================================================================
 ControlsManager * Main::getControlsManager()
 {//==========================================================================================================================
-	return stateManager->getCurrentState()->getControlsManager();
+	return stateManager->getCurrentState()->getControlsManager().get();
 }
 
 

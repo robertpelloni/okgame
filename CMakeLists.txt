@@ -516,6 +516,8 @@ set(SOURCE_FILES
     src/Utility/Logger.h
     #src/Utility/RectangularVectors.h
     src/Utility/stringconverter.h
+    src/Utility/SteamManager.cpp
+    src/Utility/SteamManager.h
     src/Utility/System.cpp
     src/Utility/System.h
     src/main.cpp
