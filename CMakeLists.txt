@@ -450,11 +450,13 @@ set(SOURCE_FILES
     src/Puzzle/GameLogic.h
     src/Puzzle/Grid.cpp
     src/Puzzle/Grid.h
-    src/Puzzle/OKGame.cpp
+    # OKGame is the unused OK fork of BobsGame (never instantiated; BobsGame is the live
+    # game class). Its sources stay in the tree but are excluded from the target.
+    #src/Puzzle/OKGame.cpp
     src/Puzzle/OKGame.h
-    src/Puzzle/OKGameMenus.cpp
-    src/Puzzle/OKGameNetwork.cpp
-    src/Engine/stadium/OKGameStadium.cpp
+    #src/Puzzle/OKGameMenus.cpp
+    #src/Puzzle/OKGameNetwork.cpp
+    #src/Engine/stadium/OKGameStadium.cpp
     src/Engine/stadium/OKGameStadium.h
     src/Puzzle/Piece.cpp
     src/Puzzle/Piece.h
