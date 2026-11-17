@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "src/Utility/SteamManager.h"
 
 //------------------------------------------------------------------------------
 //Copyright Robert Pelloni.
@@ -3589,37 +3590,37 @@ string GameSave::getCountryCodeFromCountryString(const string& countryString)
 
 void GameSave::saveLocal() {
     string data = encodeGameSave();
-    string path = FileUtils::appDataPath + \"save.txt\";
+    string path = FileUtils::appDataPath + "save.txt";
     ofstream f(path);
     if (f.is_open()) {
         f << data;
         f.close();
-        log.info(\"Game saved locally to \" + path);
+        log.info("Game saved locally to " + path);
         syncWithSteamCloud();
     }
 }
 
 void GameSave::loadLocal() {
-    string path = FileUtils::appDataPath + \"save.txt\";
+    string path = FileUtils::appDataPath + "save.txt";
     ifstream f(path);
     if (f.is_open()) {
         stringstream ss;
         ss << f.rdbuf();
         decodeGameSave(ss.str());
         f.close();
-        log.info(\"Game loaded from \" + path);
+        log.info("Game loaded from " + path);
     }
 }
 
 void GameSave::syncWithSteamCloud() {
     if (!SteamManager::isSteamRunning() || !SteamManager::isCloudEnabled()) return;
 
-    string cloudData = SteamManager::readCloudFile(\"save.txt\");
+    string cloudData = SteamManager::readCloudFile("save.txt");
     string localData = encodeGameSave();
 
-    if (cloudData == \"\") {
-        SteamManager::writeCloudFile(\"save.txt\", localData);
-        log.info(\"Initial Steam Cloud upload complete\");
+    if (cloudData == "") {
+        SteamManager::writeCloudFile("save.txt", localData);
+        log.info("Initial Steam Cloud upload complete");
         return;
     }
 
@@ -3630,12 +3631,12 @@ void GameSave::syncWithSteamCloud() {
         cloudSave.decodeGameSave(cloudData);
         
         if (this->totalTimePlayed > cloudSave.totalTimePlayed) {
-            SteamManager::writeCloudFile(\"save.txt\", localData);
-            log.info(\"Steam Cloud updated with newer local save\");
+            SteamManager::writeCloudFile("save.txt", localData);
+            log.info("Steam Cloud updated with newer local save");
         } else if (this->totalTimePlayed < cloudSave.totalTimePlayed) {
             this->decodeGameSave(cloudData);
             saveLocal(); // Update local file with cloud data
-            log.info(\"Local save updated from newer Steam Cloud data\");
+            log.info("Local save updated from newer Steam Cloud data");
         }
     }
 }
