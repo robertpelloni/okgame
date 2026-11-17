@@ -27,21 +27,21 @@ public:
 	static void initClockAndTimeZone();
 
 
-	static ConsoleText* totalRendersText;
-	static ConsoleText* totalUpdatesText;
-	static ConsoleText* rendersPerSecondText;
-	static ConsoleText* averageRendersPerSecondText;
-	static ConsoleText* updatesPerSecondText;
-	static ConsoleText* rendersSkippedText;
-	static ConsoleText* updatesSkippedText;
-	static ConsoleText* averageTicksPerFrameText;
-	static ConsoleText* averageTicksPerUpdateText;
-	static ConsoleText* onlineStatusText;
+	static sp<ConsoleText> totalRendersText;
+	static sp<ConsoleText> totalUpdatesText;
+	static sp<ConsoleText> rendersPerSecondText;
+	static sp<ConsoleText> averageRendersPerSecondText;
+	static sp<ConsoleText> updatesPerSecondText;
+	static sp<ConsoleText> rendersSkippedText;
+	static sp<ConsoleText> updatesSkippedText;
+	static sp<ConsoleText> averageTicksPerFrameText;
+	static sp<ConsoleText> averageTicksPerUpdateText;
+	static sp<ConsoleText> onlineStatusText;
 
-	static ConsoleText* upTimeText;
+	static sp<ConsoleText> upTimeText;
 
 	const static int amtTicksTexts = 10;
-	static ConsoleText* ticksText[amtTicksTexts];
+	static sp<ConsoleText> ticksText[amtTicksTexts];
 
 
 private:
@@ -54,11 +54,11 @@ private:
 
 public:
 
-	static ConsoleText* mxThreadCountText;
+	static sp<ConsoleText> mxThreadCountText;
 
-	static ConsoleText* memoryText;
-	static ConsoleText* texturesLoadedText;
-	static ConsoleText* textureBytesLoadedText;
+	static sp<ConsoleText> memoryText;
+	static sp<ConsoleText> texturesLoadedText;
+	static sp<ConsoleText> textureBytesLoadedText;
 
 
 	static int mb;
@@ -69,7 +69,7 @@ public:
 	static long long freeMemory;
 	static long long maxMemory;
 
-	ConsoleText* vramText = nullptr;
+	sp<ConsoleText> vramText = nullptr;
 
 	static void initStats();
 	static void updateStats();

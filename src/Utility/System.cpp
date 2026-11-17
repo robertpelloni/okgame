@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "Poco/Environment.h"
 
 //------------------------------------------------------------------------------
 //Copyright Robert Pelloni.
@@ -9,26 +10,26 @@ Logger System::log = Logger("System");
 
 string System::bobVersion = "Unknown";
 
-ConsoleText* System::totalRendersText = nullptr;
-ConsoleText* System::totalUpdatesText = nullptr;
-ConsoleText* System::rendersPerSecondText = nullptr;
-ConsoleText* System::averageRendersPerSecondText = nullptr;
-ConsoleText* System::updatesPerSecondText = nullptr;
-ConsoleText* System::rendersSkippedText = nullptr;
-ConsoleText* System::updatesSkippedText = nullptr;
-ConsoleText* System::averageTicksPerFrameText = nullptr;
-ConsoleText* System::averageTicksPerUpdateText = nullptr;
-ConsoleText* System::onlineStatusText = nullptr;
+sp<ConsoleText> System::totalRendersText = nullptr;
+sp<ConsoleText> System::totalUpdatesText = nullptr;
+sp<ConsoleText> System::rendersPerSecondText = nullptr;
+sp<ConsoleText> System::averageRendersPerSecondText = nullptr;
+sp<ConsoleText> System::updatesPerSecondText = nullptr;
+sp<ConsoleText> System::rendersSkippedText = nullptr;
+sp<ConsoleText> System::updatesSkippedText = nullptr;
+sp<ConsoleText> System::averageTicksPerFrameText = nullptr;
+sp<ConsoleText> System::averageTicksPerUpdateText = nullptr;
+sp<ConsoleText> System::onlineStatusText = nullptr;
 
-ConsoleText* System::upTimeText = nullptr;
+sp<ConsoleText> System::upTimeText = nullptr;
 
-ConsoleText* System::ticksText[amtTicksTexts] = {nullptr};
+sp<ConsoleText> System::ticksText[amtTicksTexts] = {nullptr};
 
-ConsoleText* System::mxThreadCountText = nullptr;
+sp<ConsoleText> System::mxThreadCountText = nullptr;
 
-ConsoleText* System::memoryText = nullptr;
-ConsoleText* System::texturesLoadedText = nullptr;
-ConsoleText* System::textureBytesLoadedText = nullptr;
+sp<ConsoleText> System::memoryText = nullptr;
+sp<ConsoleText> System::texturesLoadedText = nullptr;
+sp<ConsoleText> System::textureBytesLoadedText = nullptr;
 
 void System::initSystemInfo()
 { //=========================================================================================================================
@@ -42,7 +43,7 @@ void System::initSystemInfo()
 
 	// Load Version
 	string versionPath = Main::getPath() + "VERSION.md";
-	shared_ptr<ByteArray> versionData = FileUtils::loadByteFileFromExePath(versionPath);
+	shared_ptr<ByteArray> versionData = shared_ptr<ByteArray>(FileUtils::loadByteFileFromExePath(versionPath));
 	if (versionData && versionData->size() > 0)
 	{
 		string s((char*)versionData->data(), versionData->size());
@@ -67,7 +68,7 @@ void System::initSystemInfo()
 
 	//audio
 	int devices_count = 0;
-	SDL_AudioDeviceID *devices = SDL_GetAudioOutputDevices(&devices_count);
+	SDL_AudioDeviceID *devices = SDL_GetAudioPlaybackDevices(&devices_count);
 	if (devices) {
 		for (int i = 0; i < devices_count; i++)
 		{
@@ -76,8 +77,7 @@ void System::initSystemInfo()
 		SDL_free(devices);
 	}
 
-	int drivers_count = 0;
-	SDL_GetAudioDrivers(&drivers_count);
+	int drivers_count = SDL_GetNumAudioDrivers();
 	log.info("SDL_GetNumAudioDrivers:" + to_string(drivers_count));
 	for (int i = 0; i < drivers_count; i++)
 	{
@@ -95,44 +95,42 @@ void System::initSystemInfo()
 	log.info("SDL_GetPlatform:" + string(SDL_GetPlatform()));
 	log.info("SDL_GetPrefPath:" + string(SDL_GetPrefPath("Bob Corporation", "bob's game")));
 	log.info("SDL_GetRevision:" + string(SDL_GetRevision()));
-	log.info("SDL_GetRevisionNumber:" + to_string(SDL_GetRevisionNumber()));
 	log.info("SDL_GetSystemRAM:" + to_string(SDL_GetSystemRAM()));
 
 
 	//log.info("SDL_GetVersion" + string(SDL_GetVersion()));
-	SDL_version compiled;
-	SDL_version linked;
-	SDL_VERSION(&compiled);
-	SDL_GetVersion(&linked);
-	log.info("Compiled against SDL version:" + to_string(compiled.major) + to_string(compiled.minor) + to_string(compiled.patch));
-	log.info("Linked against SDL version:" + to_string(linked.major) + to_string(linked.minor) + to_string(linked.patch));
+	int compiledVersion = SDL_VERSION;
+	int linkedVersion = SDL_GetVersion();
+	log.info("Compiled against SDL version:" + to_string(SDL_VERSIONNUM_MAJOR(compiledVersion)) + "." + to_string(SDL_VERSIONNUM_MINOR(compiledVersion)) + "." + to_string(SDL_VERSIONNUM_MICRO(compiledVersion)));
+	log.info("Linked against SDL version:" + to_string(SDL_VERSIONNUM_MAJOR(linkedVersion)) + "." + to_string(SDL_VERSIONNUM_MINOR(linkedVersion)) + "." + to_string(SDL_VERSIONNUM_MICRO(linkedVersion)));
 
 
 	//window
-	log.info("SDL_GetWindowBrightness:" + to_string(SDL_GetWindowBrightness(GLUtils::window)));
+	log.info("SDL_GetWindowDisplayScale:" + to_string(SDL_GetWindowDisplayScale(GLUtils::window)));
 	log.info("SDL_GetDisplayForWindow:" + to_string(SDL_GetDisplayForWindow(GLUtils::window)));
 	log.info("SDL_GetWindowFlags:" + to_string(SDL_GetWindowFlags(GLUtils::window)));
-	log.info("SDL_GetWindowGrab:" + to_string(SDL_GetWindowGrab(GLUtils::window)));
+	log.info("SDL_GetWindowMouseGrab:" + to_string(SDL_GetWindowMouseGrab(GLUtils::window)));
 	log.info("SDL_GetWindowID:" + to_string(SDL_GetWindowID(GLUtils::window)));
 	log.info("SDL_GetWindowPixelFormat:" + to_string(SDL_GetWindowPixelFormat(GLUtils::window)));
 	log.info("SDL_GetWindowTitle:" + string(SDL_GetWindowTitle(GLUtils::window)));
 
 
 	//mouse
-	log.info("SDL_GetNumTouchDevices:" + to_string(SDL_GetNumTouchDevices()));
-	log.info("SDL_GetRelativeMouseMode:" + to_string(SDL_GetRelativeMouseMode()));
+	int touchDevicesCount = 0;
+	SDL_TouchID* touchDevices = SDL_GetTouchDevices(&touchDevicesCount);
+	log.info("SDL_GetNumTouchDevices:" + to_string(touchDevicesCount));
+	if (touchDevices) SDL_free(touchDevices);
+	log.info("SDL_GetWindowRelativeMouseMode:" + to_string(SDL_GetWindowRelativeMouseMode(GLUtils::window)));
 
 	//key
 	log.info("SDL_HasScreenKeyboardSupport:" + to_string(SDL_HasScreenKeyboardSupport()));
 
 	//cpu
 	log.info("SDL_GetCPUCacheLineSize:" + to_string(SDL_GetCPUCacheLineSize()));
-	log.info("SDL_GetCPUCount:" + to_string(SDL_GetCPUCount()));
-	log.info("SDL_Has3DNow:" + to_string(SDL_Has3DNow()));
+	log.info("SDL_GetNumLogicalCPUCores:" + to_string(SDL_GetNumLogicalCPUCores()));
 	log.info("SDL_HasAVX:" + to_string(SDL_HasAVX()));
 	log.info("SDL_HasAltiVec:" + to_string(SDL_HasAltiVec()));
 	log.info("SDL_HasMMX:" + to_string(SDL_HasMMX()));
-	log.info("SDL_HasRDTSC:" + to_string(SDL_HasRDTSC()));
 	log.info("SDL_HasSSE:" + to_string(SDL_HasSSE()));
 	log.info("SDL_HasSSE2:" + to_string(SDL_HasSSE2()));
 	log.info("SDL_HasSSE3:" + to_string(SDL_HasSSE3()));
@@ -141,27 +139,24 @@ void System::initSystemInfo()
 
 
 	//video
-	int render_drivers_count = 0;
-	SDL_GetRenderDrivers(&render_drivers_count);
-	log.info("SDL_GetNumRenderDrivers:" + to_string(render_drivers_count));
+	log.info("SDL_GetNumRenderDrivers:" + to_string(SDL_GetNumRenderDrivers()));
 
 	int displays_count = 0;
-	SDL_GetDisplays(&displays_count);
+	SDL_DisplayID* displays = SDL_GetDisplays(&displays_count);
 	log.info("SDL_GetNumVideoDisplays:" + to_string(displays_count));
+	if (displays) SDL_free(displays);
 
-	int video_drivers_count = 0;
-	SDL_GetVideoDrivers(&video_drivers_count);
-	log.info("SDL_GetNumVideoDrivers:" + to_string(video_drivers_count));
+	log.info("SDL_GetNumVideoDrivers:" + to_string(SDL_GetNumVideoDrivers()));
 
 	now = System::getPerformanceCounter();
 	log.debug("SDL info took " + to_string((double)((now - start) * 1000) / System::GetPerformanceFrequency()) + "ms");
 	start = System::getPerformanceCounter();
 
 
-	log.info("Poco::libraryVersion:" + to_string(Environment::libraryVersion()));
-	log.info("Poco::osName:" + string(Environment::osName()));
-	log.info("Poco::osVersion:" + string(Environment::osVersion()));
-	log.info("Poco::processorCount:" + to_string(Environment::processorCount()));
+	log.info("Poco::libraryVersion:" + to_string(Poco::Environment::libraryVersion()));
+	log.info("Poco::osName:" + string(Poco::Environment::osName()));
+	log.info("Poco::osVersion:" + string(Poco::Environment::osVersion()));
+	log.info("Poco::processorCount:" + to_string(Poco::Environment::processorCount()));
 
 	totalNow = System::getPerformanceCounter();
 	log.debug("Init system info took " + to_string((double)((totalNow - totalStart) * 1000) / System::GetPerformanceFrequency()) + "ms");
@@ -336,18 +331,18 @@ void System::updateStats()
 			int usersOnline = Main::bobNet->tcpServerConnection.serverStats->usersOnline;
 			if(usersOnline==1)onlineStatusText->text = "Connected: " + to_string(usersOnline) + " player online";
 			else onlineStatusText->text = "Connected: " + to_string(usersOnline) + " players online";
-			onlineStatusText->color = BobColor::green;
+			onlineStatusText->color = *BobColor::green;
 		}
 		else
 		{
 			onlineStatusText->text = "Connected";
-			onlineStatusText->color = BobColor::green;
+			onlineStatusText->color = *BobColor::green;
 		}
 	}
 	else
 	{
 		onlineStatusText->text = "Offline";
-		onlineStatusText->color = ConsoleText::defaultColor;
+		onlineStatusText->color = *BobColor::white;
 	}
 
 	int ticksPassedThisSecond = (int)(System::getTicksBetweenTimes(lastSecondTime, currentHighResTime));
@@ -359,31 +354,31 @@ void System::updateStats()
 
 		if (rendersThisSecond >= 60)
 		{
-			rendersPerSecondText->color = ConsoleText::defaultColor;
+			rendersPerSecondText->color = *BobColor::white;
 		}
 		else
 			if (rendersThisSecond >= 30)
 			{
-				rendersPerSecondText->color = BobColor::yellow;
+				rendersPerSecondText->color = *BobColor::yellow;
 			}
 			else
 			{
-				rendersPerSecondText->color = BobColor::red;
+				rendersPerSecondText->color = *BobColor::red;
 			}
 
 
 		if (updatesThisSecond >= 60)
 		{
-			updatesPerSecondText->color = ConsoleText::defaultColor;
+			updatesPerSecondText->color = *BobColor::white;
 		}
 		else
 			if (updatesThisSecond >= 30)
 			{
-				updatesPerSecondText->color = BobColor::yellow;
+				updatesPerSecondText->color = *BobColor::yellow;
 			}
 			else
 			{
-				updatesPerSecondText->color = BobColor::red;
+				updatesPerSecondText->color = *BobColor::red;
 			}
 
 
@@ -442,11 +437,11 @@ void System::updateStats()
 			ticksText[i]->text = string("Ticks Passed " + to_string(i) + ": ") + to_string(debugTicksPassed);
 			if (debugTicksPassed > 17)
 			{
-				ticksText[i]->color = BobColor::red;
+				ticksText[i]->color = *BobColor::red;
 			}
 			else
 			{
-				ticksText[i]->color = ConsoleText::defaultColor;
+				ticksText[i]->color = *BobColor::white;
 			}
 		}
 	}
