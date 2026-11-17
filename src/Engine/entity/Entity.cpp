@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "Sprite.h"
 
 //------------------------------------------------------------------------------
 //Copyright Robert Pelloni.
@@ -9,6 +10,27 @@
 
 
 
+// Entity::render takes BobTexture; Sprite stores OKTexture (fork conversion, mirrors Character.cpp).
+static sp<BobTexture> toBobTexture(const sp<OKTexture>& t)
+{
+	if (t == nullptr) return nullptr;
+	sp<BobTexture> o = ms<BobTexture>("", t->getTextureID());
+	o->setImageWidth(t->getImageWidth());
+	o->setImageHeight(t->getImageHeight());
+	o->setTextureWidth(t->getTextureWidth());
+	o->setTextureHeight(t->getTextureHeight());
+	return o;
+}
+static sp<OKTexture> toOKTexture(const sp<BobTexture>& t)
+{
+	if (t == nullptr) return nullptr;
+	sp<OKTexture> o = ms<OKTexture>("", t->getTextureID());
+	o->setImageWidth(t->getImageWidth());
+	o->setImageHeight(t->getImageHeight());
+	o->setTextureWidth(t->getTextureWidth());
+	o->setTextureHeight(t->getTextureHeight());
+	return o;
+}
 Logger Entity::log = Logger("Entity");
 
 const int Entity::DOWN = 0;
@@ -30,7 +52,7 @@ Entity::Entity(Engine* g, std::shared_ptr<Map> m)
 
 	this->map = m;
 
-	if (getEventData() != nullptr)this->event = std::make_shared<BobEvent>(g, getEventData(), this);
+	if (getEventData() != nullptr)this->event = std::make_shared<BobEvent>(g, getEventData().get(), this);
 }
 
 Entity::Entity(Engine* g, std::shared_ptr<EntityData> entityData, std::shared_ptr<Map> m)
@@ -42,7 +64,7 @@ Entity::Entity(Engine* g, std::shared_ptr<EntityData> entityData, std::shared_pt
 
 	this->map = m;
 
-	if (getEventData() != nullptr)this->event = std::make_shared<BobEvent>(g, getEventData(), this);
+	if (getEventData() != nullptr)this->event = std::make_shared<BobEvent>(g, getEventData().get(), this);
 }
 
 void Entity::initEntity(std::shared_ptr<EntityData> entityData)
@@ -211,7 +233,7 @@ void Entity::renderDebugBoxes()
 			//go through doorlist
 			for (int d = 0; d < (int)getMap()->doorList.size(); d++)
 			{
-				Door* door = getMap()->doorList.get(d);
+				shared_ptr<Door> door = getMap()->doorList.get(d);
 
 				if (getConnectionTYPEIDList()->get(i) == "DOOR." + door->getName())
 				{
@@ -236,7 +258,7 @@ void Entity::renderDebugBoxes()
 
 				for (int j = 0; j < (int)getMap()->currentState->areaList.size(); j++)
 				{
-					Area* a = getMap()->currentState->areaList.get(j);
+					shared_ptr<Area> a = getMap()->currentState->areaList.get(j);
 
 					if (getConnectionTYPEIDList()->get(i) == a->getName())
 					{
@@ -251,7 +273,7 @@ void Entity::renderDebugBoxes()
 			//if not found, go through warparea list
 			for (int j = 0; j < (int)getMap()->warpAreaList.size(); j++)
 			{
-				Area* a = getMap()->warpAreaList.get(j);
+				shared_ptr<Area> a = getMap()->warpAreaList.get(j);
 
 				if (getConnectionTYPEIDList()->get(i) == a->getName())
 				{
@@ -420,7 +442,7 @@ void Entity::renderDebugInfo()
 
 string Entity::getCurrentAreaTargetName()
 { //=========================================================================================================================
-	Area* a = getMap()->getAreaOrWarpAreaByTYPEID(currentAreaTYPEIDTarget);
+	shared_ptr<Area> a = getMap()->getAreaOrWarpAreaByTYPEID(currentAreaTYPEIDTarget);
 	if (a == nullptr)
 	{
 		return "ERROR: Area not found.";
@@ -436,7 +458,7 @@ void Entity::render(float mapAlpha)
 		return;
 	}
 
-	render(mapAlpha * this->alpha, this->sprite->texture, this->sprite->shadowTexture);
+	render(mapAlpha * this->alpha, toBobTexture(this->sprite->texture), toBobTexture(this->sprite->shadowTexture));
 
 	//overrode this so i can send in arbitrary texture, really only used for random sprites which contain their own unique texture reference, and not the one contained in the spriteAsset object.
 }
@@ -531,7 +553,7 @@ void Entity::render(float alpha, std::shared_ptr<BobTexture> texture, std::share
 	x1 = (float)((x0 + getWidth() * zoom));
 	y1 = (float)((y0 + getHeight() * zoom));
 
-	sprite->drawFrame(texture.get(), getFrame(), x0, x1, y0, y1, alpha, GLUtils::FILTER_NEAREST);
+	sprite->drawFrame(toOKTexture(texture), getFrame(), x0, x1, y0, y1, alpha, GLUtils::FILTER_NEAREST);
 
 	//		if(texture!=null)
 	//		{
@@ -782,22 +804,22 @@ bool Entity::checkPathBlockedXY(float mapXHQ, float mapYHQ)
 
 		for (int i = 0; i < (int)getMap()->activeEntityList.size(); i++)
 		{
-			Entity* m = getMap()->activeEntityList.get(i);
+			shared_ptr<Entity> m = getMap()->activeEntityList.get(i);
 
-			if (m != this &&
-				(dynamic_cast<Door*>(m) != NULL) == false &&
-				(dynamic_cast<RandomCharacter*>(m) != NULL) == false &&
-				(dynamic_cast<Character*>(m) != NULL) == false &&
+			if (m.get() != this &&
+				(dynamic_cast<Door*>(m.get()) != NULL) == false &&
+				(dynamic_cast<RandomCharacter*>(m.get()) != NULL) == false &&
+				(dynamic_cast<Character*>(m.get()) != NULL) == false &&
 				m->getNonWalkable() == true && x < m->getRight() && x > m->getLeft() && y < m->getBottom() && y > m->getTop())
 			{
 				return true; //TODO use touching functions - using full hitbox.
 			}
 
-			if (m != this &&
+			if (m.get() != this &&
 				(
-					(dynamic_cast<Character*>(m) != NULL) ||
-					(dynamic_cast<RandomCharacter*>(m) != NULL) ||
-					(dynamic_cast<Player*>(m) != NULL)
+					(dynamic_cast<Character*>(m.get()) != NULL) ||
+					(dynamic_cast<RandomCharacter*>(m.get()) != NULL) ||
+					(dynamic_cast<Player*>(m.get()) != NULL)
 				)
 				&& x < m->getMiddleX() + 6 && x > m->getMiddleX() - 6 && y < m->getMiddleY() + 6 && y > m->getMiddleY() - 6)
 			{
@@ -818,14 +840,14 @@ bool Entity::checkXYAgainstNonWalkableEntities(float x, float y)
 
 	for (int s = 0; s < (int)getMap()->activeEntityList.size(); s++)
 	{
-		Entity* e = getMap()->activeEntityList.get(s);
+		shared_ptr<Entity> e = getMap()->activeEntityList.get(s);
 
 		if (e->getNonWalkable() == false)
 		{
 			continue;
 		}
 
-		if (e == this)
+		if (e.get() == this)
 		{
 			continue;
 		}
@@ -843,7 +865,7 @@ bool Entity::checkXYAgainstNonWalkableEntities(float x, float y)
 
 	for (int s = 0; s < (int)getMap()->doorList.size(); s++)
 	{
-		Door* e = getMap()->doorList.get(s);
+		shared_ptr<Door> e = getMap()->doorList.get(s);
 
 		if (e->getNonWalkable() == false || e->isOpen())
 		{
@@ -1063,7 +1085,7 @@ void Entity::setCurrentAnimationByName(const string& name)
 		log.error("Sprite is null in Entity: " + getName() + " while setting AnimationByName");
 		return;
 	}
-	SpriteAnimationSequence* a = sprite->getAnimationByName(name);
+	shared_ptr<SpriteAnimationSequence> a = sprite->getAnimationByName(name);
 	if (a == nullptr)
 	{
 		log.error("Animation name: " + name + " not found in Sprite: " + sprite->getName() + " in Entity: " + getName());
@@ -1453,12 +1475,12 @@ void Entity::fadeOutAndDelete()
 void Entity::deleteFromMapEntityListAndReleaseTexture()
 { //=========================================================================================================================
 
-	Map *m = getMap();
+	shared_ptr<Map> m = getMap();
 	if (m != nullptr)
 	{
-		if (m->activeEntityList.contains(this))
+		if (m->activeEntityList.contains(shared_from_this()))
 		{
-			m->activeEntityList.remove(this);
+			m->activeEntityList.remove(shared_from_this());
 		}
 	}
 
