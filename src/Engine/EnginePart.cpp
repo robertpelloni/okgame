@@ -285,7 +285,7 @@ GameSave EnginePart::getGameSave()
 }
 
 //=========================================================================================================================
-bool EnginePart::udpPeerMessageReceived(UDPPeerConnection* c, string e)
+bool EnginePart::udpPeerMessageReceived(shared_ptr<UDPPeerConnection> c, string e)
 {//=========================================================================================================================
 
 	string s = e;
